@@ -36,6 +36,7 @@ import androidx.core.content.ContextCompat
 import com.shejan.keywe.bt.BluetoothHidManager
 import com.shejan.keywe.bt.ConnectionStatus
 import com.shejan.keywe.ui.components.*
+import com.shejan.keywe.ui.keyboard.SystemKeyboardSurface
 import com.shejan.keywe.ui.keyboard.TactileKeyboard
 import com.shejan.keywe.ui.theme.*
 
@@ -43,6 +44,11 @@ enum class ControlMode {
     TOUCHPAD,
     KEYBOARD,
     SPLIT
+}
+
+enum class KeyboardType {
+    TACTILE,
+    SYSTEM
 }
 
 class MainActivity : ComponentActivity() {
@@ -75,7 +81,9 @@ class MainActivity : ComponentActivity() {
                 val lastError by hidManager.lastError.collectAsState()
 
                 var currentMode by remember { mutableStateOf(ControlMode.SPLIT) }
+                var selectedKeyboardType by remember { mutableStateOf(KeyboardType.TACTILE) }
                 var showDeviceDialog by remember { mutableStateOf(false) }
+                var showKeyboardTypeDialog by remember { mutableStateOf(false) }
 
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -124,10 +132,11 @@ class MainActivity : ComponentActivity() {
                                 modifier = Modifier.weight(1f)
                             )
                             TactileButton(
-                                text = "KEYBOARD",
+                                text = if (selectedKeyboardType == KeyboardType.SYSTEM) "KEYBOARD (IME)" else "KEYBOARD",
                                 active = currentMode == ControlMode.KEYBOARD,
                                 onClick = { currentMode = ControlMode.KEYBOARD },
-                                modifier = Modifier.weight(1f)
+                                onLongClick = { showKeyboardTypeDialog = true },
+                                modifier = Modifier.weight(1.2f)
                             )
                         }
 
@@ -151,14 +160,29 @@ class MainActivity : ComponentActivity() {
                                 }
 
                                 ControlMode.KEYBOARD -> {
-                                    TactileKeyboard(
-                                        onSendKey = { modifiers, keycode ->
-                                            val keys = if (keycode != 0.toByte()) byteArrayOf(keycode) else byteArrayOf()
-                                            hidManager.sendKeyboardInput(modifiers, keys)
-                                        },
-                                        keyHeight = 44.dp,
-                                        modifier = Modifier.fillMaxSize()
-                                    )
+                                    Box(
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentAlignment = Alignment.BottomCenter
+                                    ) {
+                                        if (selectedKeyboardType == KeyboardType.TACTILE) {
+                                            TactileKeyboard(
+                                                onSendKey = { modifiers, keycode ->
+                                                    val keys = if (keycode != 0.toByte()) byteArrayOf(keycode) else byteArrayOf()
+                                                    hidManager.sendKeyboardInput(modifiers, keys)
+                                                },
+                                                keyHeight = 44.dp,
+                                                modifier = Modifier.wrapContentHeight()
+                                            )
+                                        } else {
+                                            SystemKeyboardSurface(
+                                                onSendKey = { modifiers, keycode ->
+                                                    val keys = if (keycode != 0.toByte()) byteArrayOf(keycode) else byteArrayOf()
+                                                    hidManager.sendKeyboardInput(modifiers, keys)
+                                                },
+                                                modifier = Modifier.wrapContentHeight()
+                                            )
+                                        }
+                                    }
                                 }
 
                                 ControlMode.SPLIT -> {
@@ -173,14 +197,24 @@ class MainActivity : ComponentActivity() {
                                             modifier = Modifier.weight(1f)
                                         )
 
-                                        TactileKeyboard(
-                                            onSendKey = { modifiers, keycode ->
-                                                val keys = if (keycode != 0.toByte()) byteArrayOf(keycode) else byteArrayOf()
-                                                hidManager.sendKeyboardInput(modifiers, keys)
-                                            },
-                                            keyHeight = 32.dp,
-                                            modifier = Modifier.wrapContentHeight()
-                                        )
+                                        if (selectedKeyboardType == KeyboardType.TACTILE) {
+                                            TactileKeyboard(
+                                                onSendKey = { modifiers, keycode ->
+                                                    val keys = if (keycode != 0.toByte()) byteArrayOf(keycode) else byteArrayOf()
+                                                    hidManager.sendKeyboardInput(modifiers, keys)
+                                                },
+                                                keyHeight = 32.dp,
+                                                modifier = Modifier.wrapContentHeight()
+                                            )
+                                        } else {
+                                            SystemKeyboardSurface(
+                                                onSendKey = { modifiers, keycode ->
+                                                    val keys = if (keycode != 0.toByte()) byteArrayOf(keycode) else byteArrayOf()
+                                                    hidManager.sendKeyboardInput(modifiers, keys)
+                                                },
+                                                modifier = Modifier.wrapContentHeight()
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -218,6 +252,15 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     }
+
+                    // Keyboard Engine Type Selector Dialog
+                    if (showKeyboardTypeDialog) {
+                        KeyboardTypeSelectorDialog(
+                            selectedType = selectedKeyboardType,
+                            onSelectType = { selectedKeyboardType = it },
+                            onDismiss = { showKeyboardTypeDialog = false }
+                        )
+                    }
                 }
             }
         }
@@ -253,6 +296,114 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@Composable
+fun KeyboardTypeSelectorDialog(
+    selectedType: KeyboardType,
+    onSelectType: (KeyboardType) -> Unit,
+    onDismiss: () -> Unit
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(0.92f)
+                .clip(RoundedCornerShape(12.dp))
+                .background(CharcoalDark)
+                .border(1.dp, GraphiteBorder, RoundedCornerShape(12.dp))
+                .padding(16.dp)
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    text = "SELECT KEYBOARD ENGINE",
+                    style = DotMatrixTypography.titleMedium,
+                    color = MonochromeWhite
+                )
+
+                Text(
+                    text = "Choose how you want to input text to your PC:",
+                    style = DotMatrixTypography.bodyMedium,
+                    color = MonochromeMuted
+                )
+
+                // Option 1: Tactile Keyboard
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(if (selectedType == KeyboardType.TACTILE) PitchBlack else CharcoalDark)
+                        .border(
+                            1.dp,
+                            if (selectedType == KeyboardType.TACTILE) SignalRed else GraphiteBorder,
+                            RoundedCornerShape(8.dp)
+                        )
+                        .clickable {
+                            onSelectType(KeyboardType.TACTILE)
+                            onDismiss()
+                        }
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "TACTILE KEYBOARD (BUILT-IN)",
+                            style = DotMatrixTypography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                            color = MonochromeWhite
+                        )
+                        Text(
+                            text = "Retro mechanical keycaps with Win, Alt, Ctrl, Shift & hotkeys.",
+                            style = DotMatrixTypography.labelSmall.copy(fontSize = 10.sp),
+                            color = MonochromeMuted
+                        )
+                    }
+                    if (selectedType == KeyboardType.TACTILE) {
+                        StatusIndicatorDot(color = SignalRed)
+                    }
+                }
+
+                // Option 2: System Keyboard (Gboard / IME)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(if (selectedType == KeyboardType.SYSTEM) PitchBlack else CharcoalDark)
+                        .border(
+                            1.dp,
+                            if (selectedType == KeyboardType.SYSTEM) MatrixGreen else GraphiteBorder,
+                            RoundedCornerShape(8.dp)
+                        )
+                        .clickable {
+                            onSelectType(KeyboardType.SYSTEM)
+                            onDismiss()
+                        }
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "SYSTEM KEYBOARD (GBOARD / IME)",
+                            style = DotMatrixTypography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                            color = MonochromeWhite
+                        )
+                        Text(
+                            text = "Use Gboard, SwiftKey, or Samsung Keyboard (Swipe, Voice typing, IME).",
+                            style = DotMatrixTypography.labelSmall.copy(fontSize = 10.sp),
+                            color = MonochromeMuted
+                        )
+                    }
+                    if (selectedType == KeyboardType.SYSTEM) {
+                        StatusIndicatorDot(color = MatrixGreen)
+                    }
+                }
+
+                TactileButton(
+                    text = "CLOSE",
+                    onClick = onDismiss,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+    }
+}
+
 @SuppressLint("MissingPermission")
 @Composable
 fun DeviceManagerDialog(
@@ -268,7 +419,7 @@ fun DeviceManagerDialog(
     onDisconnect: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    var selectedTab by remember { mutableIntStateOf(0) } // 0 = Paired, 1 = Nearby Discovered
+    var selectedTab by remember { mutableIntStateOf(0) }
 
     val infiniteTransition = rememberInfiniteTransition(label = "scan_pulse")
     val scanPulseAlpha by infiniteTransition.animateFloat(

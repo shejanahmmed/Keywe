@@ -1,8 +1,10 @@
 package com.shejan.keywe.ui.components
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -119,13 +121,15 @@ fun TactileCard(
 }
 
 /**
- * Tactile Button component with clean single-line monospace label.
+ * Tactile Button component with clean single-line monospace label and long-press support.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TactileButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onLongClick: (() -> Unit)? = null,
     active: Boolean = false,
     accentColor: Color = SignalRed
 ) {
@@ -139,7 +143,10 @@ fun TactileButton(
                 color = if (active) accentColor else GraphiteBorder,
                 shape = RoundedCornerShape(6.dp)
             )
-            .clickable { onClick() }
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            )
             .padding(horizontal = 8.dp),
         contentAlignment = Alignment.Center
     ) {

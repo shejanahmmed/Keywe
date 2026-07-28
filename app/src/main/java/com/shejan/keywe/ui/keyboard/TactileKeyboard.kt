@@ -73,6 +73,32 @@ object KeycodeMap {
     const val KEY_UP_ARROW: Byte = 0x52
 }
 
+private val NUM_KEYS = listOf(
+    "1" to KeycodeMap.KEY_1, "2" to KeycodeMap.KEY_2, "3" to KeycodeMap.KEY_3,
+    "4" to KeycodeMap.KEY_4, "5" to KeycodeMap.KEY_5, "6" to KeycodeMap.KEY_6,
+    "7" to KeycodeMap.KEY_7, "8" to KeycodeMap.KEY_8, "9" to KeycodeMap.KEY_9,
+    "0" to KeycodeMap.KEY_0
+)
+
+private val QWERTY_ROW_1 = listOf(
+    "Q" to KeycodeMap.KEY_Q, "W" to KeycodeMap.KEY_W, "E" to KeycodeMap.KEY_E,
+    "R" to KeycodeMap.KEY_R, "T" to KeycodeMap.KEY_T, "Y" to KeycodeMap.KEY_Y,
+    "U" to KeycodeMap.KEY_U, "I" to KeycodeMap.KEY_I, "O" to KeycodeMap.KEY_O,
+    "P" to KeycodeMap.KEY_P
+)
+
+private val QWERTY_ROW_2 = listOf(
+    "A" to KeycodeMap.KEY_A, "S" to KeycodeMap.KEY_S, "D" to KeycodeMap.KEY_D,
+    "F" to KeycodeMap.KEY_F, "G" to KeycodeMap.KEY_G, "H" to KeycodeMap.KEY_H,
+    "J" to KeycodeMap.KEY_J, "K" to KeycodeMap.KEY_K, "L" to KeycodeMap.KEY_L
+)
+
+private val QWERTY_ROW_3 = listOf(
+    "Z" to KeycodeMap.KEY_Z, "X" to KeycodeMap.KEY_X, "C" to KeycodeMap.KEY_C,
+    "V" to KeycodeMap.KEY_V, "B" to KeycodeMap.KEY_B, "N" to KeycodeMap.KEY_N,
+    "M" to KeycodeMap.KEY_M
+)
+
 @Composable
 fun TactileKeyboard(
     onSendKey: (modifiers: Byte, keycode: Byte) -> Unit,
@@ -152,13 +178,7 @@ fun TactileKeyboard(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(3.dp)
         ) {
-            val numKeys = listOf(
-                "1" to KeycodeMap.KEY_1, "2" to KeycodeMap.KEY_2, "3" to KeycodeMap.KEY_3,
-                "4" to KeycodeMap.KEY_4, "5" to KeycodeMap.KEY_5, "6" to KeycodeMap.KEY_6,
-                "7" to KeycodeMap.KEY_7, "8" to KeycodeMap.KEY_8, "9" to KeycodeMap.KEY_9,
-                "0" to KeycodeMap.KEY_0
-            )
-            for ((label, code) in numKeys) {
+            for ((label, code) in NUM_KEYS) {
                 KeyCap(label = label, height = keyHeight, fontSize = 11.sp, modifier = Modifier.weight(1f)) { pressKey(code) }
             }
         }
@@ -168,13 +188,7 @@ fun TactileKeyboard(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(3.dp)
         ) {
-            val row1 = listOf(
-                "Q" to KeycodeMap.KEY_Q, "W" to KeycodeMap.KEY_W, "E" to KeycodeMap.KEY_E,
-                "R" to KeycodeMap.KEY_R, "T" to KeycodeMap.KEY_T, "Y" to KeycodeMap.KEY_Y,
-                "U" to KeycodeMap.KEY_U, "I" to KeycodeMap.KEY_I, "O" to KeycodeMap.KEY_O,
-                "P" to KeycodeMap.KEY_P
-            )
-            for ((label, code) in row1) {
+            for ((label, code) in QWERTY_ROW_1) {
                 KeyCap(label = label, height = keyHeight, fontSize = 11.sp, modifier = Modifier.weight(1f)) { pressKey(code) }
             }
         }
@@ -184,12 +198,7 @@ fun TactileKeyboard(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(3.dp)
         ) {
-            val row2 = listOf(
-                "A" to KeycodeMap.KEY_A, "S" to KeycodeMap.KEY_S, "D" to KeycodeMap.KEY_D,
-                "F" to KeycodeMap.KEY_F, "G" to KeycodeMap.KEY_G, "H" to KeycodeMap.KEY_H,
-                "J" to KeycodeMap.KEY_J, "K" to KeycodeMap.KEY_K, "L" to KeycodeMap.KEY_L
-            )
-            for ((label, code) in row2) {
+            for ((label, code) in QWERTY_ROW_2) {
                 KeyCap(label = label, height = keyHeight, fontSize = 11.sp, modifier = Modifier.weight(1f)) { pressKey(code) }
             }
         }
@@ -199,12 +208,7 @@ fun TactileKeyboard(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(3.dp)
         ) {
-            val row3 = listOf(
-                "Z" to KeycodeMap.KEY_Z, "X" to KeycodeMap.KEY_X, "C" to KeycodeMap.KEY_C,
-                "V" to KeycodeMap.KEY_V, "B" to KeycodeMap.KEY_B, "N" to KeycodeMap.KEY_N,
-                "M" to KeycodeMap.KEY_M
-            )
-            for ((label, code) in row3) {
+            for ((label, code) in QWERTY_ROW_3) {
                 KeyCap(label = label, height = keyHeight, fontSize = 11.sp, modifier = Modifier.weight(1f)) { pressKey(code) }
             }
             KeyCap(label = "BKSP", height = keyHeight, fontSize = 9.sp, modifier = Modifier.weight(1.4f)) { pressKey(KeycodeMap.KEY_BACKSPACE) }
