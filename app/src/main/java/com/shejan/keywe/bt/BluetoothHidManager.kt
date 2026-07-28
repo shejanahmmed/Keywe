@@ -4,12 +4,15 @@ import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothHidDevice
+import android.bluetooth.BluetoothHidDeviceAppQosSettings
 import android.bluetooth.BluetoothHidDeviceAppSdpSettings
 import android.bluetooth.BluetoothProfile
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -36,6 +39,7 @@ class BluetoothHidManager(private val context: Context) {
 
     private var hidDevice: BluetoothHidDevice? = null
     private var connectedDevice: BluetoothDevice? = null
+    private val mainHandler = Handler(Looper.getMainLooper())
 
     private val _connectionStatus = MutableStateFlow(ConnectionStatus.DISCONNECTED)
     val connectionStatus: StateFlow<ConnectionStatus> = _connectionStatus.asStateFlow()
@@ -89,7 +93,7 @@ class BluetoothHidManager(private val context: Context) {
                     if (device != null && device.bondState == BluetoothDevice.BOND_BONDED) {
                         if (connectedDevice == null && hidDevice != null) {
                             Log.d(tag, "Attempting HID connect following ACL_CONNECTED for ${device.name}")
-                            hidDevice?.connect(device)
+                            performHidConnect(device)
                         }
                     }
                 }
@@ -162,15 +166,46 @@ class BluetoothHidManager(private val context: Context) {
                 }
                 BluetoothProfile.STATE_CONNECTING -> {
                     _connectionStatus.value = ConnectionStatus.CONNECTING
+                    _lastError.value = null
                 }
                 BluetoothProfile.STATE_DISCONNECTED -> {
-                    if (connectedDevice?.address == device.address || connectedDevice == null) {
+                    if (connectedDevice?.address == device.address) {
                         connectedDevice = null
                         _connectedDeviceName.value = null
                         _connectionStatus.value = ConnectionStatus.REGISTERED
                     }
                 }
             }
+        }
+
+        override fun onGetReport(device: BluetoothDevice, type: Byte, id: Byte, bufferSize: Int) {
+            Log.d(tag, "onGetReport: device=${device.name}, type=$type, id=$id, bufferSize=$bufferSize")
+            val dummyReport = when (id) {
+                HidReportDescriptor.MOUSE_REPORT_ID -> byteArrayOf(0, 0, 0, 0)
+                HidReportDescriptor.KEYBOARD_REPORT_ID -> byteArrayOf(0, 0, 0, 0, 0, 0, 0, 0)
+                else -> ByteArray(bufferSize.coerceAtMost(8))
+            }
+            val ok = hidDevice?.replyReport(device, type, id, dummyReport) ?: false
+            Log.d(tag, "replyReport result: $ok")
+        }
+
+        override fun onSetReport(device: BluetoothDevice, type: Byte, id: Byte, data: ByteArray) {
+            Log.d(tag, "onSetReport: device=${device.name}, type=$type, id=$id, dataSize=${data.size}")
+            val ok = hidDevice?.reportError(device, BluetoothHidDevice.ERROR_RSP_SUCCESS) ?: false
+            Log.d(tag, "reportError result: $ok")
+        }
+
+        override fun onSetProtocol(device: BluetoothDevice, protocol: Byte) {
+            Log.d(tag, "onSetProtocol: device=${device.name}, protocol=$protocol")
+            val ok = hidDevice?.reportError(device, BluetoothHidDevice.ERROR_RSP_SUCCESS) ?: false
+            Log.d(tag, "reportError for setProtocol result: $ok")
+        }
+
+        override fun onVirtualCableUnplug(device: BluetoothDevice) {
+            Log.d(tag, "onVirtualCableUnplug for device=${device.name}")
+            connectedDevice = null
+            _connectedDeviceName.value = null
+            _connectionStatus.value = ConnectionStatus.REGISTERED
         }
     }
 
@@ -227,10 +262,21 @@ class BluetoothHidManager(private val context: Context) {
     }
 
     /**
-     * Registers the SDP settings for standard combo Keyboard & Mouse peripheral.
+     * Registers the SDP settings & QoS parameters with multi-stage fallback for all device ROMs.
      */
     private fun registerHidApp() {
-        val sdpSettings = BluetoothHidDeviceAppSdpSettings(
+        if (hidDevice == null) {
+            _connectionStatus.value = ConnectionStatus.ERROR
+            _lastError.value = "HID Service Proxy Unavailable"
+            return
+        }
+
+        // Unregister any previous leftover app registration to ensure clean SDP state
+        try {
+            hidDevice?.unregisterApp()
+        } catch (_: Exception) {}
+
+        val comboSdp = BluetoothHidDeviceAppSdpSettings(
             "Keywe Controller",
             "Tactile Remote",
             "Keywe",
@@ -238,18 +284,72 @@ class BluetoothHidManager(private val context: Context) {
             HidReportDescriptor.COMBO_DESCRIPTOR
         )
 
-        val registered = hidDevice?.registerApp(
-            sdpSettings,
-            null,
-            null,
-            executor,
-            hidCallback
-        ) ?: false
+        val qos = BluetoothHidDeviceAppQosSettings(
+            BluetoothHidDeviceAppQosSettings.SERVICE_BEST_EFFORT,
+            800, 900, 0, 0, 0
+        )
+
+        // Stage 1: Try Combo SDP with QoS
+        var registered = try {
+            hidDevice?.registerApp(comboSdp, qos, qos, executor, hidCallback) ?: false
+        } catch (e: Exception) {
+            Log.w(tag, "Stage 1 registerApp failed: ${e.message}")
+            false
+        }
+
+        // Stage 2: Try Combo SDP with null QoS
+        if (!registered) {
+            Log.w(tag, "Retrying Stage 2 registerApp with null QoS...")
+            registered = try {
+                hidDevice?.registerApp(comboSdp, null, null, executor, hidCallback) ?: false
+            } catch (e: Exception) {
+                Log.w(tag, "Stage 2 registerApp failed: ${e.message}")
+                false
+            }
+        }
+
+        // Stage 3: Try Mouse Subclass (0x80) with null QoS
+        if (!registered) {
+            Log.w(tag, "Retrying Stage 3 registerApp with Subclass 0x80...")
+            val mouseSdp = BluetoothHidDeviceAppSdpSettings(
+                "Keywe Controller",
+                "Tactile Remote",
+                "Keywe",
+                0x80.toByte(),
+                HidReportDescriptor.COMBO_DESCRIPTOR
+            )
+            registered = try {
+                hidDevice?.registerApp(mouseSdp, null, null, executor, hidCallback) ?: false
+            } catch (e: Exception) {
+                Log.w(tag, "Stage 3 registerApp failed: ${e.message}")
+                false
+            }
+        }
+
+        // Stage 4: Try Keyboard Subclass (0x40) with null QoS
+        if (!registered) {
+            Log.w(tag, "Retrying Stage 4 registerApp with Subclass 0x40...")
+            val kbSdp = BluetoothHidDeviceAppSdpSettings(
+                "Keywe Controller",
+                "Tactile Remote",
+                "Keywe",
+                0x40.toByte(),
+                HidReportDescriptor.COMBO_DESCRIPTOR
+            )
+            registered = try {
+                hidDevice?.registerApp(kbSdp, null, null, executor, hidCallback) ?: false
+            } catch (e: Exception) {
+                Log.w(tag, "Stage 4 registerApp failed: ${e.message}")
+                false
+            }
+        }
 
         if (!registered) {
-            Log.e(tag, "Failed to register HID App SDP settings")
+            Log.e(tag, "All HID SDP Registration attempts failed.")
             _connectionStatus.value = ConnectionStatus.ERROR
-            _lastError.value = "Could not register HID Profile"
+            _lastError.value = "HID SDP Registration Failed"
+        } else {
+            Log.d(tag, "HID SDP Registration successfully initiated.")
         }
     }
 
@@ -257,7 +357,7 @@ class BluetoothHidManager(private val context: Context) {
      * Connects to a target paired host PC or initiates pairing if unbonded.
      */
     fun connectDevice(device: BluetoothDevice): Boolean {
-        stopScanning()
+        _lastError.value = null
         if (hidDevice == null) {
             Log.e(tag, "hidDevice is null. Cannot connect.")
             _connectionStatus.value = ConnectionStatus.ERROR
@@ -267,18 +367,35 @@ class BluetoothHidManager(private val context: Context) {
 
         if (device.bondState == BluetoothDevice.BOND_BONDED) {
             _connectionStatus.value = ConnectionStatus.CONNECTING
-            val success = hidDevice?.connect(device) ?: false
-            Log.d(tag, "hidDevice.connect() returned $success for ${device.name}")
-            if (!success) {
-                _lastError.value = "PC rejected incoming connection. Tap 'Connect' from Windows PC Bluetooth Settings."
-                _connectionStatus.value = ConnectionStatus.REGISTERED
+
+            // If Bluetooth discovery was active, cancel discovery and delay connection to allow BT chip to settle
+            val wasDiscovering = bluetoothAdapter?.isDiscovering == true
+            stopScanning()
+
+            if (wasDiscovering) {
+                mainHandler.postDelayed({
+                    performHidConnect(device)
+                }, 350)
+                return true
+            } else {
+                return performHidConnect(device)
             }
-            return success
         } else {
             Log.d(tag, "Device not bonded, initiating createBond for ${device.name}")
             _connectionStatus.value = ConnectionStatus.CONNECTING
             return device.createBond()
         }
+    }
+
+    private fun performHidConnect(device: BluetoothDevice): Boolean {
+        if (hidDevice == null) return false
+        val success = hidDevice?.connect(device) ?: false
+        Log.d(tag, "performHidConnect() returned $success for ${device.name}")
+        if (!success) {
+            _lastError.value = "PC rejected connection. Pair from Windows PC Bluetooth Settings."
+            _connectionStatus.value = ConnectionStatus.REGISTERED
+        }
+        return success
     }
 
     /**
