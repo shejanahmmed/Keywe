@@ -82,8 +82,12 @@ class MainActivity : ComponentActivity() {
 
                 var currentMode by remember { mutableStateOf(ControlMode.SPLIT) }
                 var selectedKeyboardType by remember { mutableStateOf(KeyboardType.TACTILE) }
+                var currentTheme by remember { mutableStateOf(AppThemePreset.MONOCHROME_DARK) }
+                var sensitivity by remember { mutableFloatStateOf(1.2f) }
+                var hapticsEnabled by remember { mutableStateOf(true) }
                 var showDeviceDialog by remember { mutableStateOf(false) }
                 var showKeyboardTypeDialog by remember { mutableStateOf(false) }
+                var showSettingsDialog by remember { mutableStateOf(false) }
 
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -98,9 +102,9 @@ class MainActivity : ComponentActivity() {
                         val (statusColor, statusText) = when (connectionStatus) {
                             ConnectionStatus.CONNECTED -> MatrixGreen to (connectedDeviceName ?: "CONNECTED")
                             ConnectionStatus.CONNECTING -> AmberWarning to "CONNECTING..."
-                            ConnectionStatus.REGISTERED -> SignalRed to "PAIRED / READY"
+                            ConnectionStatus.REGISTERED -> currentTheme.accentColor to "PAIRED / READY"
                             ConnectionStatus.REGISTERING -> AmberWarning to "STARTING..."
-                            ConnectionStatus.DISCONNECTED -> SignalRed to "DISCONNECTED"
+                            ConnectionStatus.DISCONNECTED -> currentTheme.accentColor to "DISCONNECTED"
                             ConnectionStatus.ERROR -> SignalRed to "BT ERROR"
                         }
 
@@ -109,7 +113,8 @@ class MainActivity : ComponentActivity() {
                             subtitle = if (lastError != null) "ERR: $lastError" else "BLUETOOTH HID PERIPHERAL",
                             statusColor = statusColor,
                             statusText = statusText,
-                            modifier = Modifier.clickable { showDeviceDialog = true }
+                            onStatusClick = { showDeviceDialog = true },
+                            onOpenSettings = { showSettingsDialog = true }
                         )
 
                         // Mode Selector Bar
@@ -122,18 +127,21 @@ class MainActivity : ComponentActivity() {
                             TactileButton(
                                 text = "TOUCHPAD",
                                 active = currentMode == ControlMode.TOUCHPAD,
+                                accentColor = currentTheme.accentColor,
                                 onClick = { currentMode = ControlMode.TOUCHPAD },
                                 modifier = Modifier.weight(1f)
                             )
                             TactileButton(
                                 text = "SPLIT VIEW",
                                 active = currentMode == ControlMode.SPLIT,
+                                accentColor = currentTheme.accentColor,
                                 onClick = { currentMode = ControlMode.SPLIT },
                                 modifier = Modifier.weight(1f)
                             )
                             TactileButton(
                                 text = if (selectedKeyboardType == KeyboardType.SYSTEM) "KEYBOARD (IME)" else "KEYBOARD",
                                 active = currentMode == ControlMode.KEYBOARD,
+                                accentColor = currentTheme.accentColor,
                                 onClick = { currentMode = ControlMode.KEYBOARD },
                                 onLongClick = { showKeyboardTypeDialog = true },
                                 modifier = Modifier.weight(1.2f)
@@ -155,6 +163,7 @@ class MainActivity : ComponentActivity() {
                                         onMouseInput = { buttons, dx, dy, wheel ->
                                             hidManager.sendMouseInput(buttons, dx, dy, wheel)
                                         },
+                                        sensitivity = sensitivity,
                                         modifier = Modifier.fillMaxSize()
                                     )
                                 }
@@ -194,6 +203,7 @@ class MainActivity : ComponentActivity() {
                                             onMouseInput = { buttons, dx, dy, wheel ->
                                                 hidManager.sendMouseInput(buttons, dx, dy, wheel)
                                             },
+                                            sensitivity = sensitivity,
                                             modifier = Modifier.weight(1f)
                                         )
 
@@ -259,6 +269,19 @@ class MainActivity : ComponentActivity() {
                             selectedType = selectedKeyboardType,
                             onSelectType = { selectedKeyboardType = it },
                             onDismiss = { showKeyboardTypeDialog = false }
+                        )
+                    }
+
+                    // Settings Dialog Modal (Theme, Preferences/Modify, About)
+                    if (showSettingsDialog) {
+                        com.shejan.keywe.ui.components.SettingsDialog(
+                            currentTheme = currentTheme,
+                            onSelectTheme = { currentTheme = it },
+                            sensitivity = sensitivity,
+                            onSensitivityChange = { sensitivity = it },
+                            hapticsEnabled = hapticsEnabled,
+                            onHapticsToggle = { hapticsEnabled = it },
+                            onDismiss = { showSettingsDialog = false }
                         )
                     }
                 }
