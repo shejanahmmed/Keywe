@@ -14,7 +14,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -24,6 +23,13 @@ import com.shejan.keywe.bt.HidReportDescriptor
 import com.shejan.keywe.ui.theme.*
 import kotlin.math.roundToInt
 
+private class TouchState {
+    var lastX: Float = 0f
+    var lastY: Float = 0f
+    var touchDownTime: Long = 0L
+    var isDragging: Boolean = false
+}
+
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun TouchpadSurface(
@@ -31,11 +37,7 @@ fun TouchpadSurface(
     modifier: Modifier = Modifier,
     sensitivity: Float = 1.2f
 ) {
-    var lastX by remember { mutableStateOf(0f) }
-    var lastY by remember { mutableStateOf(0f) }
-    var touchDownTime by remember { mutableStateOf(0L) }
-    var activePointerCount by remember { mutableStateOf(0) }
-    var isDragging by remember { mutableStateOf(false) }
+    val state = remember { TouchState() }
 
     Column(
         modifier = modifier
@@ -55,44 +57,47 @@ fun TouchpadSurface(
                 .border(1.dp, GraphiteSubtle, RoundedCornerShape(6.dp))
                 .pointerInteropFilter { event ->
                     val pointerCount = event.pointerCount
-                    activePointerCount = pointerCount
 
                     when (event.actionMasked) {
                         MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
-                            lastX = event.x
-                            lastY = event.y
-                            touchDownTime = System.currentTimeMillis()
-                            isDragging = false
+                            state.lastX = event.x
+                            state.lastY = event.y
+                            state.touchDownTime = System.currentTimeMillis()
+                            state.isDragging = false
                         }
 
                         MotionEvent.ACTION_MOVE -> {
-                            val dxRaw = (event.x - lastX) * sensitivity
-                            val dyRaw = (event.y - lastY) * sensitivity
+                            val dxRaw = (event.x - state.lastX) * sensitivity
+                            val dyRaw = (event.y - state.lastY) * sensitivity
 
                             if (kotlin.math.abs(dxRaw) > 1 || kotlin.math.abs(dyRaw) > 1) {
-                                isDragging = true
+                                state.isDragging = true
                             }
 
-                            lastX = event.x
-                            lastY = event.y
+                            state.lastX = event.x
+                            state.lastY = event.y
 
                             if (pointerCount == 1) {
                                 // Cursor Movement
                                 val dxByte = dxRaw.coerceIn(-127f, 127f).roundToInt().toByte()
                                 val dyByte = dyRaw.coerceIn(-127f, 127f).roundToInt().toByte()
-                                onMouseInput(0, dxByte, dyByte, 0)
+                                if (dxByte != 0.toByte() || dyByte != 0.toByte()) {
+                                    onMouseInput(0, dxByte, dyByte, 0)
+                                }
                             } else if (pointerCount == 2) {
                                 // Two-Finger Vertical Scroll
                                 val wheelByte = (-dyRaw).coerceIn(-127f, 127f).roundToInt().toByte()
-                                onMouseInput(0, 0, 0, wheelByte)
+                                if (wheelByte != 0.toByte()) {
+                                    onMouseInput(0, 0, 0, wheelByte)
+                                }
                             }
                         }
 
                         MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP -> {
-                            val duration = System.currentTimeMillis() - touchDownTime
+                            val duration = System.currentTimeMillis() - state.touchDownTime
 
                             // Tap Detection (< 200ms without dragging)
-                            if (!isDragging && duration < 200) {
+                            if (!state.isDragging && duration < 200) {
                                 if (pointerCount == 1) {
                                     // Single Finger Tap -> Left Click
                                     onMouseInput(HidReportDescriptor.MOUSE_BUTTON_LEFT, 0, 0, 0)
@@ -109,14 +114,16 @@ fun TouchpadSurface(
                 },
             contentAlignment = Alignment.Center
         ) {
-            // Subtle Dot Grid background on touchpad field
+            // Subtle Dot Grid background on touchpad field (renders once, zero recomposition overhead)
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val step = 24.dp.toPx()
+                val dotColor = MonochromeDarkText.copy(alpha = 0.35f)
+                val dotRadius = 1.dp.toPx()
                 for (x in 0..size.width.toInt() step step.toInt()) {
                     for (y in 0..size.height.toInt() step step.toInt()) {
                         drawCircle(
-                            color = MonochromeDarkText.copy(alpha = 0.35f),
-                            radius = 1.dp.toPx(),
+                            color = dotColor,
+                            radius = dotRadius,
                             center = Offset(x.toFloat(), y.toFloat())
                         )
                     }
