@@ -171,7 +171,7 @@ class MainActivity : ComponentActivity() {
                                 ControlMode.KEYBOARD -> {
                                     Box(
                                         modifier = Modifier.fillMaxSize(),
-                                        contentAlignment = Alignment.BottomCenter
+                                        contentAlignment = if (selectedKeyboardType == KeyboardType.TACTILE) Alignment.BottomCenter else Alignment.TopCenter
                                     ) {
                                         if (selectedKeyboardType == KeyboardType.TACTILE) {
                                             TactileKeyboard(
@@ -382,7 +382,7 @@ fun KeyboardTypeSelectorDialog(
                     }
                 }
 
-                // Option 2: System Keyboard (Gboard / IME)
+                // Option 2: System Keyboard (Phone IME)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -402,12 +402,12 @@ fun KeyboardTypeSelectorDialog(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "SYSTEM KEYBOARD (GBOARD / IME)",
+                            text = "SYSTEM KEYBOARD (PHONE IME)",
                             style = DotMatrixTypography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                             color = MonochromeWhite
                         )
                         Text(
-                            text = "Use Gboard, SwiftKey, or Samsung Keyboard (Swipe, Voice typing, IME).",
+                            text = "Use your phone's default soft keyboard (Swipe, Voice typing, IME).",
                             style = DotMatrixTypography.labelSmall.copy(fontSize = 10.sp),
                             color = MonochromeMuted
                         )
