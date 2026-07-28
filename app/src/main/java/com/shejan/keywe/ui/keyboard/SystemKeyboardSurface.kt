@@ -121,7 +121,7 @@ fun SystemKeyboardSurface(
             ) {
                 StatusIndicatorDot(color = MatrixGreen)
                 Text(
-                    text = "SYSTEM KEYBOARD (GBOARD/IME)",
+                    text = "SYSTEM KEYBOARD (PHONE IME)",
                     style = DotMatrixTypography.labelSmall.copy(fontSize = 11.sp),
                     color = MatrixGreen
                 )
@@ -180,7 +180,7 @@ fun SystemKeyboardSurface(
                 ),
                 placeholder = {
                     Text(
-                        text = "Type here using Gboard/System keyboard...",
+                        text = "Type here using your phone's keyboard...",
                         style = DotMatrixTypography.bodyMedium.copy(fontSize = 12.sp),
                         color = MonochromeMuted
                     )
