@@ -1,6 +1,8 @@
 <div align="center">
 
-# ⌨️ KEYWE
+<img src="app/src/main/res/drawable/ic_logo_light.png" width="120" height="120" alt="Keywe Logo" />
+
+# KEYWE
 
 **Native Bluetooth HID Keyboard & Touchpad Remote for Android**
 
@@ -29,21 +31,28 @@ Unlike traditional remote control apps, **Keywe requires ZERO software, drivers,
 - **Plug-and-Play Out-of-the-Box**: Works seamlessly with **Windows 10/11**, **macOS**, **Linux**, **ChromeOS**, **Android TV**, and **Game Consoles**.
 - **No Background PC Drivers**: Zero server app or host script installation required.
 
+### ⌨️ 75% Mechanical Keyboard Deck
+- **Authentic Physical Proportions**: Wide physical spacebar (`5.5x`), accented **Signal Red ESC** keycap, bottom-row modifiers (`CTRL`, `WIN`, `ALT`), and dedicated arrow keys cluster (`▲ ▼ ◄ ►`).
+- **Quick Macro Shortcuts**: Dedicated hotkey caps for `WIN+D`, `ALT+TAB`, `WIN+L`, `COPY`, `PASTE`, and `BKSP`.
+
+### 🔄 Landscape Widescreen & Side-by-Side Split View
+- **Ergonomic Two-Handed Typing**: Rotate device horizontally to transform phone or tablet into a physical-feel two-handed keyboard deck.
+- **Side-by-Side Split View**: Left 42% width for Touchpad & click pads + Right 58% width for Mechanical Keyboard Deck.
+
 ### 🖱️ Multi-Touch Gesture Trackpad
-- **Smooth Cursor Navigation**: Dynamic relative delta pointer tracking.
+- **Smooth Cursor Navigation**: Dynamic relative delta pointer tracking with customizable sensitivity (`0.5x` - `2.5x`).
 - **Natural Gestures**:
   - **Single-finger tap**: Left Click
   - **Two-finger tap**: Right Click
   - **Two-finger vertical swipe**: Smooth Vertical Scrolling
 - **Tactile Click Pads**: Dedicated `[ L-CLICK ]` and `[ R-CLICK ]` hardware buttons.
 
-### 🎹 Dual Keyboard Engines
-- **Tactile Mechanical Engine**: Built-in dot-matrix keycap layout featuring modifier keys (`CTRL`, `ALT`, `WIN`, `SHIFT`), navigation arrows, and quick hotkey macros (`WIN+D`, `ALT+TAB`, `WIN+L`, `COPY`, `PASTE`).
-- **System Keyboard (Gboard / Soft IME) Engine**: Click and hold (long-press) the **`[ KEYBOARD ]`** mode button to switch to System Keyboard mode. Type using **Gboard**, **SwiftKey**, **Swipe Typing**, or **Voice Input** directly to your PC.
+### 📱 System Soft Keyboard (PHONE IME) Engine
+- **Default Phone Keyboard Integration**: Click and hold (long-press) the **`[ KEYBOARD ]`** mode button to switch to System Keyboard mode. Type using any default phone soft keyboard (Gboard, SwiftKey, Samsung Keyboard, Voice Input, or Swipe).
 
-### ⚡ Thermal & Battery Optimization
-- **0% CPU Recomposition Spike**: Optimized high-frequency touch coordinate tracking prevents UI recomposition loops, keeping your phone cool and preserving battery life.
-- **Traffic Throttling**: Filters out zero-movement reports to cut Bluetooth radio packet overhead by 30%.
+### ⚙️ Theme & Preferences Modal
+- **Preset Accent Palettes**: `MONOCHROME RED`, `MATRIX GREEN`, `CYBER AMBER`, `TACTILE WHITE`.
+- **In-App Documents**: Integrated License & Privacy Policy access.
 
 ---
 
