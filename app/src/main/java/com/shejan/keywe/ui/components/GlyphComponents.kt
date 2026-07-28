@@ -39,7 +39,7 @@ fun StatusIndicatorDot(
 }
 
 /**
- * Minimal Dot Matrix Header with LED status dot and crisp monospace typography.
+ * Minimal Dot Matrix Header with LED status dot, top-right Settings button, and crisp monospace typography.
  */
 @Composable
 fun DotMatrixHeader(
@@ -47,6 +47,8 @@ fun DotMatrixHeader(
     subtitle: String = "",
     statusColor: Color = SignalRed,
     statusText: String = "STANDBY",
+    onStatusClick: (() -> Unit)? = null,
+    onOpenSettings: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -74,28 +76,52 @@ fun DotMatrixHeader(
             }
         }
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(8.dp))
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            modifier = Modifier
-                .clip(RoundedCornerShape(4.dp))
-                .background(CharcoalDark)
-                .border(1.dp, GraphiteBorder, RoundedCornerShape(4.dp))
-                .padding(horizontal = 8.dp, vertical = 5.dp)
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            StatusIndicatorDot(color = statusColor, size = 7.dp)
-            Text(
-                text = statusText.uppercase(),
-                style = DotMatrixTypography.labelSmall.copy(
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.SemiBold
-                ),
-                color = MonochromeWhite,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+            // Status Badge Button
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(CharcoalDark)
+                    .border(1.dp, GraphiteBorder, RoundedCornerShape(4.dp))
+                    .clickable(enabled = onStatusClick != null) { onStatusClick?.invoke() }
+                    .padding(horizontal = 8.dp, vertical = 6.dp)
+            ) {
+                StatusIndicatorDot(color = statusColor, size = 7.dp)
+                Text(
+                    text = statusText.uppercase(),
+                    style = DotMatrixTypography.labelSmall.copy(
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.SemiBold
+                    ),
+                    color = MonochromeWhite,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            // Settings Button [ ⚙ ]
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(CharcoalDark)
+                    .border(1.dp, GraphiteBorder, RoundedCornerShape(4.dp))
+                    .clickable(enabled = onOpenSettings != null) { onOpenSettings?.invoke() }
+                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "⚙",
+                    style = DotMatrixTypography.labelSmall.copy(fontSize = 12.sp),
+                    color = MonochromeWhite
+                )
+            }
         }
     }
 }
