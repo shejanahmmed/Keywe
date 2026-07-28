@@ -2,7 +2,7 @@ package com.shejan.keywe.bt
 
 /**
  * Standard USB HID Report Descriptor for a combined Bluetooth Keyboard and Mouse/Touchpad peripheral.
- * Compatible out-of-the-box with Windows 10/11, macOS, Linux, and Android hosts without drivers.
+ * Fully compliant with USB HID Specification v1.11 & Windows hidbth.sys parser requirements.
  */
 object HidReportDescriptor {
 
@@ -85,19 +85,19 @@ object HidReportDescriptor {
         0x95.toByte(), 0x08.toByte(), //   REPORT_COUNT (8)
         0x81.toByte(), 0x02.toByte(), //   INPUT (Data,Var,Abs)
 
-        // Reserved Byte
+        // Reserved Padding Byte (Constant Variable)
         0x95.toByte(), 0x01.toByte(), //   REPORT_COUNT (1)
         0x75.toByte(), 0x08.toByte(), //   REPORT_SIZE (8)
-        0x81.toByte(), 0x01.toByte(), //   INPUT (Cnst,Ary,Abs)
+        0x81.toByte(), 0x03.toByte(), //   INPUT (Cnst,Var,Abs) -> 0x03 (Constant Variable)
 
         // 6 Key Array
-        0x95.toByte(), 0x06.toByte(), //   REPORT_COUNT (6)
-        0x75.toByte(), 0x08.toByte(), //   REPORT_SIZE (8)
-        0x15.toByte(), 0x00.toByte(), //   LOGICAL_MINIMUM (0)
-        0x25.toByte(), 0x65.toByte(), //   LOGICAL_MAXIMUM (101)
         0x05.toByte(), 0x07.toByte(), //   USAGE_PAGE (Keyboard/Keypad)
         0x19.toByte(), 0x00.toByte(), //   USAGE_MINIMUM (0)
         0x29.toByte(), 0x65.toByte(), //   USAGE_MAXIMUM (101)
+        0x15.toByte(), 0x00.toByte(), //   LOGICAL_MINIMUM (0)
+        0x25.toByte(), 0x65.toByte(), //   LOGICAL_MAXIMUM (101)
+        0x95.toByte(), 0x06.toByte(), //   REPORT_COUNT (6)
+        0x75.toByte(), 0x08.toByte(), //   REPORT_SIZE (8)
         0x81.toByte(), 0x00.toByte(), //   INPUT (Data,Ary,Abs)
 
         0xC0.toByte()                 // END_COLLECTION

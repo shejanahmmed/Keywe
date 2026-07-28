@@ -1,6 +1,7 @@
 package com.shejan.keywe
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.content.Intent
@@ -25,7 +26,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -253,6 +253,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@SuppressLint("MissingPermission")
 @Composable
 fun DeviceManagerDialog(
     pairedDevices: List<BluetoothDevice>,
@@ -398,7 +399,7 @@ fun DeviceManagerDialog(
                             items(pairedDevices) { device ->
                                 val deviceName = try {
                                     device.name ?: device.address
-                                } catch (e: SecurityException) {
+                                } catch (_: SecurityException) {
                                     device.address
                                 }
 
@@ -450,14 +451,20 @@ fun DeviceManagerDialog(
                             items(discoveredDevices) { device ->
                                 val deviceName = try {
                                     device.name ?: "UNKNOWN DEVICE"
-                                } catch (e: SecurityException) {
+                                } catch (_: SecurityException) {
                                     "UNKNOWN DEVICE"
+                                }
+
+                                val isDeviceBonded = try {
+                                    device.bondState == BluetoothDevice.BOND_BONDED
+                                } catch (_: SecurityException) {
+                                    false
                                 }
 
                                 DeviceItemCard(
                                     name = deviceName,
                                     address = device.address,
-                                    isBonded = device.bondState == BluetoothDevice.BOND_BONDED,
+                                    isBonded = isDeviceBonded,
                                     onClick = { onSelectDevice(device) }
                                 )
                             }
@@ -502,6 +509,7 @@ fun DeviceManagerDialog(
     }
 }
 
+@SuppressLint("MissingPermission")
 @Composable
 fun DeviceItemCard(
     name: String,
