@@ -307,7 +307,7 @@ fun SettingsDialog(
                                         text = "GITHUB",
                                         onClick = {
                                             val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/shejanahmmed"))
-                                            context.startActivity(intent)
+                                            try { context.startActivity(intent) } catch (_: Exception) {}
                                         },
                                         modifier = Modifier.weight(1f)
                                     )
@@ -315,9 +315,31 @@ fun SettingsDialog(
                                         text = "LINKEDIN",
                                         onClick = {
                                             val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.linkedin.com/in/farjan-ahmmed/"))
-                                            context.startActivity(intent)
+                                            try { context.startActivity(intent) } catch (_: Exception) {}
                                         },
                                         modifier = Modifier.weight(1f)
+                                    )
+                                }
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    TactileButton(
+                                        text = "LICENSE",
+                                        onClick = {
+                                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/shejanahmmed/Keywe/blob/main/LICENSE"))
+                                            try { context.startActivity(intent) } catch (_: Exception) {}
+                                        },
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    TactileButton(
+                                        text = "PRIVACY POLICY",
+                                        onClick = {
+                                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/shejanahmmed/Keywe"))
+                                            try { context.startActivity(intent) } catch (_: Exception) {}
+                                        },
+                                        modifier = Modifier.weight(1.3f)
                                     )
                                 }
                             }
