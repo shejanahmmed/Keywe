@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -26,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -89,6 +91,9 @@ class MainActivity : ComponentActivity() {
                 var showKeyboardTypeDialog by remember { mutableStateOf(false) }
                 var showSettingsDialog by remember { mutableStateOf(false) }
 
+                val configuration = LocalConfiguration.current
+                val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = PitchBlack
@@ -108,54 +113,100 @@ class MainActivity : ComponentActivity() {
                             ConnectionStatus.ERROR -> SignalRed to "BT ERROR"
                         }
 
-                        DotMatrixHeader(
-                            title = "KEYWE",
-                            subtitle = if (lastError != null) "ERR: $lastError" else "BLUETOOTH HID PERIPHERAL",
-                            statusColor = statusColor,
-                            statusText = statusText,
-                            onStatusClick = { showDeviceDialog = true },
-                            onOpenSettings = { showSettingsDialog = true }
-                        )
+                        if (isLandscape) {
+                            // Compact Landscape Top Bar (Header + Controls in one row)
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 12.dp, vertical = 2.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                DotMatrixHeader(
+                                    title = "KEYWE",
+                                    subtitle = if (lastError != null) "ERR: $lastError" else "BLUETOOTH HID",
+                                    statusColor = statusColor,
+                                    statusText = statusText,
+                                    onStatusClick = { showDeviceDialog = true },
+                                    onOpenSettings = { showSettingsDialog = true },
+                                    modifier = Modifier.weight(1f, fill = false)
+                                )
 
-                        // Mode Selector Bar
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 4.dp),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            TactileButton(
-                                text = "TOUCHPAD",
-                                active = currentMode == ControlMode.TOUCHPAD,
-                                accentColor = currentTheme.accentColor,
-                                onClick = { currentMode = ControlMode.TOUCHPAD },
-                                modifier = Modifier.weight(1f)
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    TactileButton(
+                                        text = "TOUCHPAD",
+                                        active = currentMode == ControlMode.TOUCHPAD,
+                                        accentColor = currentTheme.accentColor,
+                                        onClick = { currentMode = ControlMode.TOUCHPAD }
+                                    )
+                                    TactileButton(
+                                        text = "SPLIT VIEW",
+                                        active = currentMode == ControlMode.SPLIT,
+                                        accentColor = currentTheme.accentColor,
+                                        onClick = { currentMode = ControlMode.SPLIT }
+                                    )
+                                    TactileButton(
+                                        text = if (selectedKeyboardType == KeyboardType.SYSTEM) "KEYBOARD (IME)" else "KEYBOARD",
+                                        active = currentMode == ControlMode.KEYBOARD,
+                                        accentColor = currentTheme.accentColor,
+                                        onClick = { currentMode = ControlMode.KEYBOARD },
+                                        onLongClick = { showKeyboardTypeDialog = true }
+                                    )
+                                }
+                            }
+                        } else {
+                            // Standard Portrait Layout (Stacked Header & Controls)
+                            DotMatrixHeader(
+                                title = "KEYWE",
+                                subtitle = if (lastError != null) "ERR: $lastError" else "BLUETOOTH HID PERIPHERAL",
+                                statusColor = statusColor,
+                                statusText = statusText,
+                                onStatusClick = { showDeviceDialog = true },
+                                onOpenSettings = { showSettingsDialog = true }
                             )
-                            TactileButton(
-                                text = "SPLIT VIEW",
-                                active = currentMode == ControlMode.SPLIT,
-                                accentColor = currentTheme.accentColor,
-                                onClick = { currentMode = ControlMode.SPLIT },
-                                modifier = Modifier.weight(1f)
-                            )
-                            TactileButton(
-                                text = if (selectedKeyboardType == KeyboardType.SYSTEM) "KEYBOARD (IME)" else "KEYBOARD",
-                                active = currentMode == ControlMode.KEYBOARD,
-                                accentColor = currentTheme.accentColor,
-                                onClick = { currentMode = ControlMode.KEYBOARD },
-                                onLongClick = { showKeyboardTypeDialog = true },
-                                modifier = Modifier.weight(1.2f)
-                            )
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                TactileButton(
+                                    text = "TOUCHPAD",
+                                    active = currentMode == ControlMode.TOUCHPAD,
+                                    accentColor = currentTheme.accentColor,
+                                    onClick = { currentMode = ControlMode.TOUCHPAD },
+                                    modifier = Modifier.weight(1f)
+                                )
+                                TactileButton(
+                                    text = "SPLIT VIEW",
+                                    active = currentMode == ControlMode.SPLIT,
+                                    accentColor = currentTheme.accentColor,
+                                    onClick = { currentMode = ControlMode.SPLIT },
+                                    modifier = Modifier.weight(1f)
+                                )
+                                TactileButton(
+                                    text = if (selectedKeyboardType == KeyboardType.SYSTEM) "KEYBOARD (IME)" else "KEYBOARD",
+                                    active = currentMode == ControlMode.KEYBOARD,
+                                    accentColor = currentTheme.accentColor,
+                                    onClick = { currentMode = ControlMode.KEYBOARD },
+                                    onLongClick = { showKeyboardTypeDialog = true },
+                                    modifier = Modifier.weight(1.2f)
+                                )
+                            }
                         }
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(if (isLandscape) 4.dp else 8.dp))
 
                         // Active View Area
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(1f)
-                                .padding(horizontal = 16.dp)
+                                .padding(horizontal = if (isLandscape) 10.dp else 16.dp)
                         ) {
                             when (currentMode) {
                                 ControlMode.TOUCHPAD -> {
@@ -179,7 +230,7 @@ class MainActivity : ComponentActivity() {
                                                     val keys = if (keycode != 0.toByte()) byteArrayOf(keycode) else byteArrayOf()
                                                     hidManager.sendKeyboardInput(modifiers, keys)
                                                 },
-                                                keyHeight = 44.dp,
+                                                keyHeight = if (isLandscape) 34.dp else 44.dp,
                                                 modifier = Modifier.wrapContentHeight()
                                             )
                                         } else {
@@ -195,42 +246,85 @@ class MainActivity : ComponentActivity() {
                                 }
 
                                 ControlMode.SPLIT -> {
-                                    Column(
-                                        modifier = Modifier.fillMaxSize(),
-                                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                                    ) {
-                                        com.shejan.keywe.ui.touchpad.TouchpadSurface(
-                                            onMouseInput = { buttons, dx, dy, wheel ->
-                                                hidManager.sendMouseInput(buttons, dx, dy, wheel)
-                                            },
-                                            sensitivity = sensitivity,
-                                            modifier = Modifier.weight(1f)
-                                        )
+                                    if (isLandscape) {
+                                        // Landscape Side-by-Side Split View
+                                        Row(
+                                            modifier = Modifier.fillMaxSize(),
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            com.shejan.keywe.ui.touchpad.TouchpadSurface(
+                                                onMouseInput = { buttons, dx, dy, wheel ->
+                                                    hidManager.sendMouseInput(buttons, dx, dy, wheel)
+                                                },
+                                                sensitivity = sensitivity,
+                                                modifier = Modifier.weight(0.42f)
+                                            )
 
-                                        if (selectedKeyboardType == KeyboardType.TACTILE) {
-                                            TactileKeyboard(
-                                                onSendKey = { modifiers, keycode ->
-                                                    val keys = if (keycode != 0.toByte()) byteArrayOf(keycode) else byteArrayOf()
-                                                    hidManager.sendKeyboardInput(modifiers, keys)
+                                            Box(
+                                                modifier = Modifier
+                                                    .weight(0.58f)
+                                                    .fillMaxHeight(),
+                                                contentAlignment = Alignment.BottomCenter
+                                            ) {
+                                                if (selectedKeyboardType == KeyboardType.TACTILE) {
+                                                    TactileKeyboard(
+                                                        onSendKey = { modifiers, keycode ->
+                                                            val keys = if (keycode != 0.toByte()) byteArrayOf(keycode) else byteArrayOf()
+                                                            hidManager.sendKeyboardInput(modifiers, keys)
+                                                        },
+                                                        keyHeight = 30.dp,
+                                                        modifier = Modifier.wrapContentHeight()
+                                                    )
+                                                } else {
+                                                    SystemKeyboardSurface(
+                                                        onSendKey = { modifiers, keycode ->
+                                                            val keys = if (keycode != 0.toByte()) byteArrayOf(keycode) else byteArrayOf()
+                                                            hidManager.sendKeyboardInput(modifiers, keys)
+                                                        },
+                                                        modifier = Modifier.wrapContentHeight()
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    } else {
+                                        // Portrait Vertical Stacked Split View
+                                        Column(
+                                            modifier = Modifier.fillMaxSize(),
+                                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            com.shejan.keywe.ui.touchpad.TouchpadSurface(
+                                                onMouseInput = { buttons, dx, dy, wheel ->
+                                                    hidManager.sendMouseInput(buttons, dx, dy, wheel)
                                                 },
-                                                keyHeight = 32.dp,
-                                                modifier = Modifier.wrapContentHeight()
+                                                sensitivity = sensitivity,
+                                                modifier = Modifier.weight(1f)
                                             )
-                                        } else {
-                                            SystemKeyboardSurface(
-                                                onSendKey = { modifiers, keycode ->
-                                                    val keys = if (keycode != 0.toByte()) byteArrayOf(keycode) else byteArrayOf()
-                                                    hidManager.sendKeyboardInput(modifiers, keys)
-                                                },
-                                                modifier = Modifier.wrapContentHeight()
-                                            )
+
+                                            if (selectedKeyboardType == KeyboardType.TACTILE) {
+                                                TactileKeyboard(
+                                                    onSendKey = { modifiers, keycode ->
+                                                        val keys = if (keycode != 0.toByte()) byteArrayOf(keycode) else byteArrayOf()
+                                                        hidManager.sendKeyboardInput(modifiers, keys)
+                                                    },
+                                                    keyHeight = 32.dp,
+                                                    modifier = Modifier.wrapContentHeight()
+                                                )
+                                            } else {
+                                                SystemKeyboardSurface(
+                                                    onSendKey = { modifiers, keycode ->
+                                                        val keys = if (keycode != 0.toByte()) byteArrayOf(keycode) else byteArrayOf()
+                                                        hidManager.sendKeyboardInput(modifiers, keys)
+                                                    },
+                                                    modifier = Modifier.wrapContentHeight()
+                                                )
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(if (isLandscape) 4.dp else 12.dp))
                     }
 
                     // Device Scanner & Selection Dialog Modal
