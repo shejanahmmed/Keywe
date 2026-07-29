@@ -130,8 +130,32 @@ fun TactileKeyboard(
     onSendKey: (modifiers: Byte, keycode: Byte) -> Unit,
     modifier: Modifier = Modifier,
     keyHeight: Dp = 44.dp,
-    accentColor: Color = SignalRed
+    accentColor: Color = SignalRed,
+    hapticsEnabled: Boolean = true
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val vibrator = remember(context) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            val manager = context.getSystemService(android.content.Context.VIBRATOR_MANAGER_SERVICE) as android.os.VibratorManager
+            manager.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            context.getSystemService(android.content.Context.VIBRATOR_SERVICE) as android.os.Vibrator
+        }
+    }
+
+    fun triggerHapticPulse() {
+        if (!hapticsEnabled) return
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                vibrator.vibrate(android.os.VibrationEffect.createOneShot(14L, android.os.VibrationEffect.DEFAULT_AMPLITUDE))
+            } else {
+                @Suppress("DEPRECATION")
+                vibrator.vibrate(14L)
+            }
+        } catch (_: Exception) {}
+    }
+
     var ctrlActive by remember { mutableStateOf(false) }
     var altActive by remember { mutableStateOf(false) }
     var shiftActive by remember { mutableStateOf(false) }
@@ -148,6 +172,7 @@ fun TactileKeyboard(
     }
 
     fun pressKey(keycode: Byte) {
+        triggerHapticPulse()
         val mods = currentModifiers()
         onSendKey(mods, keycode)
         onSendKey(mods, 0)

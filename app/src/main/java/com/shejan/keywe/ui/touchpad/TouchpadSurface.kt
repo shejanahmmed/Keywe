@@ -35,8 +35,32 @@ private class TouchState {
 fun TouchpadSurface(
     onMouseInput: (buttons: Byte, dx: Byte, dy: Byte, wheel: Byte) -> Unit,
     modifier: Modifier = Modifier,
-    sensitivity: Float = 1.2f
+    sensitivity: Float = 1.2f,
+    hapticsEnabled: Boolean = true
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val vibrator = remember(context) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            val manager = context.getSystemService(android.content.Context.VIBRATOR_MANAGER_SERVICE) as android.os.VibratorManager
+            manager.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            context.getSystemService(android.content.Context.VIBRATOR_SERVICE) as android.os.Vibrator
+        }
+    }
+
+    fun triggerHapticPulse() {
+        if (!hapticsEnabled) return
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                vibrator.vibrate(android.os.VibrationEffect.createOneShot(16L, android.os.VibrationEffect.DEFAULT_AMPLITUDE))
+            } else {
+                @Suppress("DEPRECATION")
+                vibrator.vibrate(16L)
+            }
+        } catch (_: Exception) {}
+    }
+
     val state = remember { TouchState() }
 
     Column(
@@ -98,6 +122,7 @@ fun TouchpadSurface(
 
                             // Tap Detection (< 200ms without dragging)
                             if (!state.isDragging && duration < 200) {
+                                triggerHapticPulse()
                                 if (pointerCount == 1) {
                                     // Single Finger Tap -> Left Click
                                     onMouseInput(HidReportDescriptor.MOUSE_BUTTON_LEFT, 0, 0, 0)
@@ -157,6 +182,7 @@ fun TouchpadSurface(
                     .background(GraphiteSubtle)
                     .border(1.dp, GraphiteBorder, RoundedCornerShape(6.dp))
                     .clickable {
+                        triggerHapticPulse()
                         onMouseInput(HidReportDescriptor.MOUSE_BUTTON_LEFT, 0, 0, 0)
                         onMouseInput(0, 0, 0, 0)
                     },
@@ -183,6 +209,7 @@ fun TouchpadSurface(
                     .background(GraphiteSubtle)
                     .border(1.dp, GraphiteBorder, RoundedCornerShape(6.dp))
                     .clickable {
+                        triggerHapticPulse()
                         onMouseInput(HidReportDescriptor.MOUSE_BUTTON_RIGHT, 0, 0, 0)
                         onMouseInput(0, 0, 0, 0)
                     },
