@@ -73,12 +73,26 @@ object KeycodeMap {
     const val KEY_BACKSLASH: Byte = 0x31
     const val KEY_SEMICOLON: Byte = 0x33
     const val KEY_APOSTROPHE: Byte = 0x34
+    const val KEY_GRAVE: Byte = 0x35
     const val KEY_COMMA: Byte = 0x36
     const val KEY_DOT: Byte = 0x37
     const val KEY_SLASH: Byte = 0x38
     const val KEY_CAPSLOCK: Byte = 0x39
-    const val KEY_DELETE: Byte = 0x4C
 
+    const val KEY_F1: Byte = 0x3A
+    const val KEY_F2: Byte = 0x3B
+    const val KEY_F3: Byte = 0x3C
+    const val KEY_F4: Byte = 0x3D
+    const val KEY_F5: Byte = 0x3E
+    const val KEY_F6: Byte = 0x3F
+    const val KEY_F7: Byte = 0x40
+    const val KEY_F8: Byte = 0x41
+    const val KEY_F9: Byte = 0x42
+    const val KEY_F10: Byte = 0x43
+    const val KEY_F11: Byte = 0x44
+    const val KEY_F12: Byte = 0x45
+
+    const val KEY_DELETE: Byte = 0x4C
     const val KEY_RIGHT_ARROW: Byte = 0x4F
     const val KEY_LEFT_ARROW: Byte = 0x50
     const val KEY_DOWN_ARROW: Byte = 0x51
@@ -93,34 +107,36 @@ private val NUM_KEYS = listOf(
 )
 
 private val QWERTY_ROW_1 = listOf(
-    "Q" to KeycodeMap.KEY_Q, "W" to KeycodeMap.KEY_W, "E" to KeycodeMap.KEY_E,
-    "R" to KeycodeMap.KEY_R, "T" to KeycodeMap.KEY_T, "Y" to KeycodeMap.KEY_Y,
-    "U" to KeycodeMap.KEY_U, "I" to KeycodeMap.KEY_I, "O" to KeycodeMap.KEY_O,
-    "P" to KeycodeMap.KEY_P
+    "q" to KeycodeMap.KEY_Q, "w" to KeycodeMap.KEY_W, "e" to KeycodeMap.KEY_E,
+    "r" to KeycodeMap.KEY_R, "t" to KeycodeMap.KEY_T, "y" to KeycodeMap.KEY_Y,
+    "u" to KeycodeMap.KEY_U, "i" to KeycodeMap.KEY_I, "o" to KeycodeMap.KEY_O,
+    "p" to KeycodeMap.KEY_P
 )
 
 private val QWERTY_ROW_2 = listOf(
-    "A" to KeycodeMap.KEY_A, "S" to KeycodeMap.KEY_S, "D" to KeycodeMap.KEY_D,
-    "F" to KeycodeMap.KEY_F, "G" to KeycodeMap.KEY_G, "H" to KeycodeMap.KEY_H,
-    "J" to KeycodeMap.KEY_J, "K" to KeycodeMap.KEY_K, "L" to KeycodeMap.KEY_L
+    "a" to KeycodeMap.KEY_A, "s" to KeycodeMap.KEY_S, "d" to KeycodeMap.KEY_D,
+    "f" to KeycodeMap.KEY_F, "g" to KeycodeMap.KEY_G, "h" to KeycodeMap.KEY_H,
+    "j" to KeycodeMap.KEY_J, "k" to KeycodeMap.KEY_K, "l" to KeycodeMap.KEY_L
 )
 
 private val QWERTY_ROW_3 = listOf(
-    "Z" to KeycodeMap.KEY_Z, "X" to KeycodeMap.KEY_X, "C" to KeycodeMap.KEY_C,
-    "V" to KeycodeMap.KEY_V, "B" to KeycodeMap.KEY_B, "N" to KeycodeMap.KEY_N,
-    "M" to KeycodeMap.KEY_M
+    "z" to KeycodeMap.KEY_Z, "x" to KeycodeMap.KEY_X, "c" to KeycodeMap.KEY_C,
+    "v" to KeycodeMap.KEY_V, "b" to KeycodeMap.KEY_B, "n" to KeycodeMap.KEY_N,
+    "m" to KeycodeMap.KEY_M
 )
 
 @Composable
 fun TactileKeyboard(
     onSendKey: (modifiers: Byte, keycode: Byte) -> Unit,
     modifier: Modifier = Modifier,
-    keyHeight: Dp = 38.dp
+    keyHeight: Dp = 44.dp,
+    accentColor: Color = SignalRed
 ) {
     var ctrlActive by remember { mutableStateOf(false) }
     var altActive by remember { mutableStateOf(false) }
     var shiftActive by remember { mutableStateOf(false) }
     var winActive by remember { mutableStateOf(false) }
+    var capsActive by remember { mutableStateOf(false) }
 
     fun currentModifiers(): Byte {
         var mods = 0
@@ -140,148 +156,273 @@ fun TactileKeyboard(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(10.dp))
-            .background(CharcoalDark)
-            .border(1.dp, GraphiteBorder, RoundedCornerShape(10.dp))
-            .padding(6.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(PitchBlack)
+            .border(1.dp, GraphiteBorder, RoundedCornerShape(8.dp))
+            .padding(4.dp),
+        verticalArrangement = Arrangement.spacedBy(3.dp)
     ) {
-        // Row 0: Top Function / Utility Bar (Red ESC + Hotkeys + BKSP)
+        // Row 0: Function Keys (Red ESC + F1-F12 + Delete)
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(3.dp)
+            horizontalArrangement = Arrangement.spacedBy(2.5.dp)
         ) {
             KeyCap(
-                label = "ESC",
+                label = "Esc",
                 height = keyHeight,
                 fontSize = 10.sp,
-                active = true,
-                activeColor = SignalRed,
+                customBg = accentColor,
+                customFg = MonochromeWhite,
                 modifier = Modifier.weight(1.1f)
             ) { pressKey(KeycodeMap.KEY_ESCAPE) }
 
-            KeyCap(label = "WIN+D", height = keyHeight, fontSize = 9.sp, modifier = Modifier.weight(1f)) {
-                onSendKey(HidReportDescriptor.MODIFIER_LEFT_GUI, KeycodeMap.KEY_D)
-                onSendKey(0, 0)
+            val fKeys = listOf(
+                "F1" to KeycodeMap.KEY_F1, "F2" to KeycodeMap.KEY_F2, "F3" to KeycodeMap.KEY_F3, "F4" to KeycodeMap.KEY_F4,
+                "F5" to KeycodeMap.KEY_F5, "F6" to KeycodeMap.KEY_F6, "F7" to KeycodeMap.KEY_F7, "F8" to KeycodeMap.KEY_F8,
+                "F9" to KeycodeMap.KEY_F9, "F10" to KeycodeMap.KEY_F10, "F11" to KeycodeMap.KEY_F11, "F12" to KeycodeMap.KEY_F12
+            )
+            for ((label, code) in fKeys) {
+                KeyCap(
+                    label = label,
+                    height = keyHeight,
+                    fontSize = 9.sp,
+                    customBg = CharcoalDark,
+                    modifier = Modifier.weight(1f)
+                ) { pressKey(code) }
             }
-            KeyCap(label = "ALT+TAB", height = keyHeight, fontSize = 9.sp, modifier = Modifier.weight(1.1f)) {
-                onSendKey(HidReportDescriptor.MODIFIER_LEFT_ALT, KeycodeMap.KEY_TAB)
-                onSendKey(0, 0)
-            }
-            KeyCap(label = "WIN+L", height = keyHeight, fontSize = 9.sp, modifier = Modifier.weight(1f)) {
-                onSendKey(HidReportDescriptor.MODIFIER_LEFT_GUI, KeycodeMap.KEY_L)
-                onSendKey(0, 0)
-            }
-            KeyCap(label = "COPY", height = keyHeight, fontSize = 9.sp, modifier = Modifier.weight(1f)) {
-                onSendKey(HidReportDescriptor.MODIFIER_LEFT_CTRL, KeycodeMap.KEY_C)
-                onSendKey(0, 0)
-            }
-            KeyCap(label = "PASTE", height = keyHeight, fontSize = 9.sp, modifier = Modifier.weight(1f)) {
-                onSendKey(HidReportDescriptor.MODIFIER_LEFT_CTRL, KeycodeMap.KEY_V)
-                onSendKey(0, 0)
-            }
-            KeyCap(label = "BKSP", height = keyHeight, fontSize = 9.sp, modifier = Modifier.weight(1.3f)) {
-                pressKey(KeycodeMap.KEY_BACKSPACE)
-            }
+
+            KeyCap(
+                label = "Delete",
+                height = keyHeight,
+                fontSize = 8.5.sp,
+                customBg = CharcoalDark,
+                modifier = Modifier.weight(1.2f)
+            ) { pressKey(KeycodeMap.KEY_DELETE) }
         }
 
-        // Row 1: Numbers Row
+        // Row 1: Numbers & Symbols
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(3.dp)
+            horizontalArrangement = Arrangement.spacedBy(2.5.dp)
         ) {
+            KeyCap(label = "`", height = keyHeight, fontSize = 10.sp, modifier = Modifier.weight(1f)) { pressKey(KeycodeMap.KEY_GRAVE) }
             for ((label, code) in NUM_KEYS) {
-                KeyCap(label = label, height = keyHeight, fontSize = 11.sp, modifier = Modifier.weight(1f)) { pressKey(code) }
+                KeyCap(label = label, height = keyHeight, fontSize = 10.sp, modifier = Modifier.weight(1f)) { pressKey(code) }
             }
-            KeyCap(label = "-", height = keyHeight, fontSize = 11.sp, modifier = Modifier.weight(1f)) { pressKey(KeycodeMap.KEY_MINUS) }
-            KeyCap(label = "=", height = keyHeight, fontSize = 11.sp, modifier = Modifier.weight(1f)) { pressKey(KeycodeMap.KEY_EQUAL) }
+            KeyCap(label = "-", height = keyHeight, fontSize = 10.sp, modifier = Modifier.weight(1f)) { pressKey(KeycodeMap.KEY_MINUS) }
+            KeyCap(label = "=", height = keyHeight, fontSize = 10.sp, modifier = Modifier.weight(1f)) { pressKey(KeycodeMap.KEY_EQUAL) }
+            KeyCap(
+                label = "Backspace",
+                height = keyHeight,
+                fontSize = 8.5.sp,
+                customBg = CharcoalDark,
+                modifier = Modifier.weight(1.6f)
+            ) { pressKey(KeycodeMap.KEY_BACKSPACE) }
         }
 
-        // Row 2: QWERTY Row 1 + Braces
+        // Row 2: QWERTY Row
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(3.dp)
-        ) {
-            KeyCap(label = "TAB", height = keyHeight, fontSize = 9.sp, modifier = Modifier.weight(1.3f)) { pressKey(KeycodeMap.KEY_TAB) }
-            for ((label, code) in QWERTY_ROW_1) {
-                KeyCap(label = label, height = keyHeight, fontSize = 11.sp, modifier = Modifier.weight(1f)) { pressKey(code) }
-            }
-        }
-
-        // Row 3: QWERTY Row 2 + Enter
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(3.dp)
-        ) {
-            for ((label, code) in QWERTY_ROW_2) {
-                KeyCap(label = label, height = keyHeight, fontSize = 11.sp, modifier = Modifier.weight(1f)) { pressKey(code) }
-            }
-            KeyCap(label = "ENTER", height = keyHeight, fontSize = 9.sp, modifier = Modifier.weight(1.8f)) { pressKey(KeycodeMap.KEY_ENTER) }
-        }
-
-        // Row 4: QWERTY Row 3 + Punctuation
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(3.dp)
-        ) {
-            for ((label, code) in QWERTY_ROW_3) {
-                KeyCap(label = label, height = keyHeight, fontSize = 11.sp, modifier = Modifier.weight(1f)) { pressKey(code) }
-            }
-            KeyCap(label = ",", height = keyHeight, fontSize = 11.sp, modifier = Modifier.weight(1f)) { pressKey(KeycodeMap.KEY_COMMA) }
-            KeyCap(label = ".", height = keyHeight, fontSize = 11.sp, modifier = Modifier.weight(1f)) { pressKey(KeycodeMap.KEY_DOT) }
-            KeyCap(label = "/", height = keyHeight, fontSize = 11.sp, modifier = Modifier.weight(1f)) { pressKey(KeycodeMap.KEY_SLASH) }
-        }
-
-        // Row 5: Physical Bottom Deck (Modifiers + WIDE SPACEBAR + Arrow Keys)
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(3.dp)
+            horizontalArrangement = Arrangement.spacedBy(2.5.dp)
         ) {
             KeyCap(
-                label = "CTRL",
-                active = ctrlActive,
+                label = "Tab",
+                height = keyHeight,
+                fontSize = 9.sp,
+                customBg = CharcoalDark,
+                modifier = Modifier.weight(1.3f)
+            ) { pressKey(KeycodeMap.KEY_TAB) }
+
+            for ((label, code) in QWERTY_ROW_1) {
+                val displayLabel = if (capsActive || shiftActive) label.uppercase() else label
+                KeyCap(label = displayLabel, height = keyHeight, fontSize = 10.5.sp, modifier = Modifier.weight(1f)) { pressKey(code) }
+            }
+
+            KeyCap(label = "[", height = keyHeight, fontSize = 10.sp, modifier = Modifier.weight(1f)) { pressKey(KeycodeMap.KEY_LEFTBRACE) }
+            KeyCap(label = "]", height = keyHeight, fontSize = 10.sp, modifier = Modifier.weight(1f)) { pressKey(KeycodeMap.KEY_RIGHTBRACE) }
+            KeyCap(label = "\\", height = keyHeight, fontSize = 10.sp, modifier = Modifier.weight(1f)) { pressKey(KeycodeMap.KEY_BACKSLASH) }
+        }
+
+        // Row 3: Home Row
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(2.5.dp)
+        ) {
+            KeyCap(
+                label = "Caps Lock",
+                height = keyHeight,
+                fontSize = 8.5.sp,
+                active = capsActive,
+                activeColor = accentColor,
+                customBg = CharcoalDark,
+                modifier = Modifier.weight(1.5f)
+            ) {
+                capsActive = !capsActive
+                pressKey(KeycodeMap.KEY_CAPSLOCK)
+            }
+
+            for ((label, code) in QWERTY_ROW_2) {
+                val displayLabel = if (capsActive || shiftActive) label.uppercase() else label
+                KeyCap(label = displayLabel, height = keyHeight, fontSize = 10.5.sp, modifier = Modifier.weight(1f)) { pressKey(code) }
+            }
+
+            KeyCap(label = ";", height = keyHeight, fontSize = 10.sp, modifier = Modifier.weight(1f)) { pressKey(KeycodeMap.KEY_SEMICOLON) }
+            KeyCap(label = "'", height = keyHeight, fontSize = 10.sp, modifier = Modifier.weight(1f)) { pressKey(KeycodeMap.KEY_APOSTROPHE) }
+            KeyCap(
+                label = "Enter",
                 height = keyHeight,
                 fontSize = 9.5.sp,
+                customBg = accentColor,
+                customFg = MonochromeWhite,
+                modifier = Modifier.weight(2.1f)
+            ) { pressKey(KeycodeMap.KEY_ENTER) }
+        }
+
+        // Row 4: Shift Row
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(2.5.dp)
+        ) {
+            KeyCap(
+                label = "Shift",
+                height = keyHeight,
+                fontSize = 9.sp,
+                active = shiftActive,
+                activeColor = accentColor,
+                customBg = CharcoalDark,
+                modifier = Modifier.weight(1.8f)
+            ) { shiftActive = !shiftActive }
+
+            for ((label, code) in QWERTY_ROW_3) {
+                val displayLabel = if (capsActive || shiftActive) label.uppercase() else label
+                KeyCap(label = displayLabel, height = keyHeight, fontSize = 10.5.sp, modifier = Modifier.weight(1f)) { pressKey(code) }
+            }
+
+            KeyCap(label = ",", height = keyHeight, fontSize = 10.sp, modifier = Modifier.weight(1f)) { pressKey(KeycodeMap.KEY_COMMA) }
+            KeyCap(label = ".", height = keyHeight, fontSize = 10.sp, modifier = Modifier.weight(1f)) { pressKey(KeycodeMap.KEY_DOT) }
+            KeyCap(label = "/", height = keyHeight, fontSize = 10.sp, modifier = Modifier.weight(1f)) { pressKey(KeycodeMap.KEY_SLASH) }
+
+            KeyCap(
+                label = "Shift",
+                height = keyHeight,
+                fontSize = 9.sp,
+                active = shiftActive,
+                activeColor = accentColor,
+                customBg = CharcoalDark,
+                modifier = Modifier.weight(1.5f)
+            ) { shiftActive = !shiftActive }
+
+            // Accented Arrow Up Key
+            KeyCap(
+                label = "↑",
+                height = keyHeight,
+                fontSize = 11.sp,
+                customBg = accentColor,
+                customFg = MonochromeWhite,
+                modifier = Modifier.weight(1f)
+            ) { pressKey(KeycodeMap.KEY_UP_ARROW) }
+        }
+
+        // Row 5: Physical Bottom Deck (Wide Spacebar + Accented Arrow Keys)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(2.5.dp)
+        ) {
+            KeyCap(
+                label = "Ctrl",
+                active = ctrlActive,
+                height = keyHeight,
+                fontSize = 9.sp,
+                activeColor = accentColor,
+                customBg = CharcoalDark,
                 modifier = Modifier.weight(1.1f)
             ) { ctrlActive = !ctrlActive }
 
             KeyCap(
-                label = "WIN",
+                label = "Win",
                 active = winActive,
                 height = keyHeight,
-                fontSize = 9.5.sp,
+                fontSize = 9.sp,
+                activeColor = accentColor,
+                customBg = CharcoalDark,
                 modifier = Modifier.weight(1.1f)
             ) { winActive = !winActive }
 
             KeyCap(
-                label = "ALT",
+                label = "Alt",
                 active = altActive,
                 height = keyHeight,
-                fontSize = 9.5.sp,
+                fontSize = 9.sp,
+                activeColor = accentColor,
+                customBg = CharcoalDark,
                 modifier = Modifier.weight(1.1f)
             ) { altActive = !altActive }
 
-            // WIDE PHYSICAL SPACEBAR (weight 5.5f)
+            // WIDE LIGHT PHYSICAL SPACEBAR (weight 5.8f)
             KeyCap(
                 label = "SPACE",
                 height = keyHeight,
                 fontSize = 10.sp,
-                modifier = Modifier.weight(5.5f)
+                customBg = Color(0xFFD6D6D6),
+                customFg = PitchBlack,
+                modifier = Modifier.weight(5.8f)
             ) { pressKey(KeycodeMap.KEY_SPACE) }
 
             KeyCap(
-                label = "SHIFT",
-                active = shiftActive,
+                label = "Alt",
+                active = altActive,
                 height = keyHeight,
-                fontSize = 9.5.sp,
-                modifier = Modifier.weight(1.3f)
-            ) { shiftActive = !shiftActive }
+                fontSize = 9.sp,
+                activeColor = accentColor,
+                customBg = CharcoalDark,
+                modifier = Modifier.weight(1.1f)
+            ) { altActive = !altActive }
 
-            // Arrow Keys Cluster
-            KeyCap(label = "▲", height = keyHeight, fontSize = 11.sp, modifier = Modifier.weight(0.75f)) { pressKey(KeycodeMap.KEY_UP_ARROW) }
-            KeyCap(label = "▼", height = keyHeight, fontSize = 11.sp, modifier = Modifier.weight(0.75f)) { pressKey(KeycodeMap.KEY_DOWN_ARROW) }
-            KeyCap(label = "◄", height = keyHeight, fontSize = 11.sp, modifier = Modifier.weight(0.75f)) { pressKey(KeycodeMap.KEY_LEFT_ARROW) }
-            KeyCap(label = "►", height = keyHeight, fontSize = 11.sp, modifier = Modifier.weight(0.75f)) { pressKey(KeycodeMap.KEY_RIGHT_ARROW) }
+            KeyCap(
+                label = "Fn",
+                height = keyHeight,
+                fontSize = 9.sp,
+                customBg = CharcoalDark,
+                modifier = Modifier.weight(1f)
+            ) {}
+
+            KeyCap(
+                label = "Ctrl",
+                active = ctrlActive,
+                height = keyHeight,
+                fontSize = 9.sp,
+                activeColor = accentColor,
+                customBg = CharcoalDark,
+                modifier = Modifier.weight(1.1f)
+            ) { ctrlActive = !ctrlActive }
+
+            // Accented Arrow Keys Cluster (← ↓ →)
+            KeyCap(
+                label = "←",
+                height = keyHeight,
+                fontSize = 11.sp,
+                customBg = accentColor,
+                customFg = MonochromeWhite,
+                modifier = Modifier.weight(1f)
+            ) { pressKey(KeycodeMap.KEY_LEFT_ARROW) }
+
+            KeyCap(
+                label = "↓",
+                height = keyHeight,
+                fontSize = 11.sp,
+                customBg = accentColor,
+                customFg = MonochromeWhite,
+                modifier = Modifier.weight(1f)
+            ) { pressKey(KeycodeMap.KEY_DOWN_ARROW) }
+
+            KeyCap(
+                label = "→",
+                height = keyHeight,
+                fontSize = 11.sp,
+                customBg = accentColor,
+                customFg = MonochromeWhite,
+                modifier = Modifier.weight(1f)
+            ) { pressKey(KeycodeMap.KEY_RIGHT_ARROW) }
         }
     }
 }
@@ -294,16 +435,29 @@ fun KeyCap(
     fontSize: androidx.compose.ui.unit.TextUnit = 10.sp,
     active: Boolean = false,
     activeColor: Color = SignalRed,
+    customBg: Color? = null,
+    customFg: Color? = null,
     onClick: () -> Unit
 ) {
+    val bgColor = when {
+        active -> activeColor
+        customBg != null -> customBg
+        else -> Color(0xFF242426)
+    }
+    val textColor = when {
+        active -> PitchBlack
+        customFg != null -> customFg
+        else -> MonochromeWhite
+    }
+
     Box(
         modifier = modifier
             .height(height)
             .clip(RoundedCornerShape(4.dp))
-            .background(if (active) activeColor else PitchBlack)
+            .background(bgColor)
             .border(1.dp, if (active) activeColor else GraphiteBorder, RoundedCornerShape(4.dp))
             .clickable { onClick() }
-            .padding(horizontal = 2.dp),
+            .padding(horizontal = 1.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -312,7 +466,7 @@ fun KeyCap(
                 fontWeight = FontWeight.Bold,
                 fontSize = fontSize
             ),
-            color = if (active) PitchBlack else MonochromeWhite,
+            color = textColor,
             maxLines = 1,
             softWrap = false,
             overflow = TextOverflow.Ellipsis

@@ -35,6 +35,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import com.shejan.keywe.bt.BluetoothHidManager
 import com.shejan.keywe.bt.ConnectionStatus
 import com.shejan.keywe.ui.components.*
@@ -70,6 +73,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
+        windowInsetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
+
         hidManager = BluetoothHidManager(this)
 
         checkAndRequestPermissions()
@@ -101,7 +109,7 @@ class MainActivity : ComponentActivity() {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .systemBarsPadding()
+                            .statusBarsPadding()
                     ) {
                         // Header Status Bar
                         val (statusColor, statusText) = when (connectionStatus) {
@@ -114,26 +122,33 @@ class MainActivity : ComponentActivity() {
                         }
 
                         if (isLandscape) {
-                            // Compact Landscape Top Bar (Header + Controls in one row)
+                            // Ultra-Compact Landscape Top Bar
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 12.dp, vertical = 2.dp),
+                                    .padding(horizontal = 8.dp, vertical = 2.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                DotMatrixHeader(
-                                    title = "KEYWE",
-                                    subtitle = if (lastError != null) "ERR: $lastError" else "BLUETOOTH HID",
-                                    statusColor = statusColor,
-                                    statusText = statusText,
-                                    onStatusClick = { showDeviceDialog = true },
-                                    onOpenSettings = { showSettingsDialog = true },
-                                    modifier = Modifier.weight(1f, fill = false)
-                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Text(
+                                        text = "KEYWE",
+                                        style = DotMatrixTypography.titleMedium.copy(fontSize = 14.sp),
+                                        color = MonochromeWhite
+                                    )
+                                    StatusIndicatorDot(color = statusColor, size = 6.dp)
+                                    Text(
+                                        text = statusText.uppercase(),
+                                        style = DotMatrixTypography.labelSmall.copy(fontSize = 9.sp, fontWeight = FontWeight.Bold),
+                                        color = MonochromeWhite
+                                    )
+                                }
 
                                 Row(
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     TactileButton(
@@ -154,6 +169,10 @@ class MainActivity : ComponentActivity() {
                                         accentColor = currentTheme.accentColor,
                                         onClick = { currentMode = ControlMode.KEYBOARD },
                                         onLongClick = { showKeyboardTypeDialog = true }
+                                    )
+                                    TactileButton(
+                                        text = "⚙",
+                                        onClick = { showSettingsDialog = true }
                                     )
                                 }
                             }
@@ -199,14 +218,14 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(if (isLandscape) 4.dp else 8.dp))
+                        Spacer(modifier = Modifier.height(if (isLandscape) 2.dp else 8.dp))
 
                         // Active View Area
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(1f)
-                                .padding(horizontal = if (isLandscape) 10.dp else 16.dp)
+                                .padding(horizontal = if (isLandscape) 4.dp else 16.dp)
                         ) {
                             when (currentMode) {
                                 ControlMode.TOUCHPAD -> {
@@ -230,8 +249,9 @@ class MainActivity : ComponentActivity() {
                                                     val keys = if (keycode != 0.toByte()) byteArrayOf(keycode) else byteArrayOf()
                                                     hidManager.sendKeyboardInput(modifiers, keys)
                                                 },
-                                                keyHeight = if (isLandscape) 34.dp else 44.dp,
-                                                modifier = Modifier.wrapContentHeight()
+                                                keyHeight = if (isLandscape) 46.dp else 42.dp,
+                                                accentColor = currentTheme.accentColor,
+                                                modifier = Modifier.fillMaxWidth()
                                             )
                                         } else {
                                             SystemKeyboardSurface(
@@ -250,19 +270,19 @@ class MainActivity : ComponentActivity() {
                                         // Landscape Side-by-Side Split View
                                         Row(
                                             modifier = Modifier.fillMaxSize(),
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                            horizontalArrangement = Arrangement.spacedBy(6.dp)
                                         ) {
                                             com.shejan.keywe.ui.touchpad.TouchpadSurface(
                                                 onMouseInput = { buttons, dx, dy, wheel ->
                                                     hidManager.sendMouseInput(buttons, dx, dy, wheel)
                                                 },
                                                 sensitivity = sensitivity,
-                                                modifier = Modifier.weight(0.42f)
+                                                modifier = Modifier.weight(0.40f)
                                             )
 
                                             Box(
                                                 modifier = Modifier
-                                                    .weight(0.58f)
+                                                    .weight(0.60f)
                                                     .fillMaxHeight(),
                                                 contentAlignment = Alignment.BottomCenter
                                             ) {
@@ -272,8 +292,9 @@ class MainActivity : ComponentActivity() {
                                                             val keys = if (keycode != 0.toByte()) byteArrayOf(keycode) else byteArrayOf()
                                                             hidManager.sendKeyboardInput(modifiers, keys)
                                                         },
-                                                        keyHeight = 30.dp,
-                                                        modifier = Modifier.wrapContentHeight()
+                                                        keyHeight = 36.dp,
+                                                        accentColor = currentTheme.accentColor,
+                                                        modifier = Modifier.fillMaxWidth()
                                                     )
                                                 } else {
                                                     SystemKeyboardSurface(
@@ -307,6 +328,7 @@ class MainActivity : ComponentActivity() {
                                                         hidManager.sendKeyboardInput(modifiers, keys)
                                                     },
                                                     keyHeight = 32.dp,
+                                                    accentColor = currentTheme.accentColor,
                                                     modifier = Modifier.wrapContentHeight()
                                                 )
                                             } else {
