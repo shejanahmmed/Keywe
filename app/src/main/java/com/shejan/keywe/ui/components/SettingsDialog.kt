@@ -239,10 +239,11 @@ fun SettingsDialog(
                                         checked = hapticsEnabled,
                                         onCheckedChange = onHapticsToggle,
                                         colors = SwitchDefaults.colors(
-                                            checkedThumbColor = currentTheme.accentColor,
-                                            checkedTrackColor = CharcoalDark,
+                                            checkedThumbColor = PitchBlack,
+                                            checkedTrackColor = currentTheme.accentColor,
                                             uncheckedThumbColor = MonochromeMuted,
-                                            uncheckedTrackColor = PitchBlack
+                                            uncheckedTrackColor = CharcoalDark,
+                                            uncheckedBorderColor = GraphiteBorder
                                         )
                                     )
                                 }

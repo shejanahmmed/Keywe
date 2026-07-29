@@ -4,7 +4,9 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.app.Activity
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Build
@@ -28,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -99,8 +102,18 @@ class MainActivity : ComponentActivity() {
                 var showKeyboardTypeDialog by remember { mutableStateOf(false) }
                 var showSettingsDialog by remember { mutableStateOf(false) }
 
+                val context = LocalContext.current
+                val activity = context as? Activity
                 val configuration = LocalConfiguration.current
                 val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+                fun toggleOrientation() {
+                    activity?.requestedOrientation = if (isLandscape) {
+                        ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                    } else {
+                        ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                    }
+                }
 
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -171,7 +184,11 @@ class MainActivity : ComponentActivity() {
                                         onLongClick = { showKeyboardTypeDialog = true }
                                     )
                                     TactileButton(
-                                        text = "⚙",
+                                        iconGraphic = { ScreenRotationGraphic() },
+                                        onClick = { toggleOrientation() }
+                                    )
+                                    TactileButton(
+                                        iconGraphic = { SettingsGearGraphic() },
                                         onClick = { showSettingsDialog = true }
                                     )
                                 }
@@ -184,6 +201,7 @@ class MainActivity : ComponentActivity() {
                                 statusColor = statusColor,
                                 statusText = statusText,
                                 onStatusClick = { showDeviceDialog = true },
+                                onToggleRotate = { toggleOrientation() },
                                 onOpenSettings = { showSettingsDialog = true }
                             )
 
@@ -234,6 +252,7 @@ class MainActivity : ComponentActivity() {
                                             hidManager.sendMouseInput(buttons, dx, dy, wheel)
                                         },
                                         sensitivity = sensitivity,
+                                        hapticsEnabled = hapticsEnabled,
                                         modifier = Modifier.fillMaxSize()
                                     )
                                 }
@@ -251,6 +270,7 @@ class MainActivity : ComponentActivity() {
                                                 },
                                                 keyHeight = if (isLandscape) 46.dp else 42.dp,
                                                 accentColor = currentTheme.accentColor,
+                                                hapticsEnabled = hapticsEnabled,
                                                 modifier = Modifier.fillMaxWidth()
                                             )
                                         } else {
@@ -277,6 +297,7 @@ class MainActivity : ComponentActivity() {
                                                     hidManager.sendMouseInput(buttons, dx, dy, wheel)
                                                 },
                                                 sensitivity = sensitivity,
+                                                hapticsEnabled = hapticsEnabled,
                                                 modifier = Modifier.weight(0.40f)
                                             )
 
@@ -294,6 +315,7 @@ class MainActivity : ComponentActivity() {
                                                         },
                                                         keyHeight = 36.dp,
                                                         accentColor = currentTheme.accentColor,
+                                                        hapticsEnabled = hapticsEnabled,
                                                         modifier = Modifier.fillMaxWidth()
                                                     )
                                                 } else {
@@ -318,6 +340,7 @@ class MainActivity : ComponentActivity() {
                                                     hidManager.sendMouseInput(buttons, dx, dy, wheel)
                                                 },
                                                 sensitivity = sensitivity,
+                                                hapticsEnabled = hapticsEnabled,
                                                 modifier = Modifier.weight(1f)
                                             )
 
@@ -329,6 +352,7 @@ class MainActivity : ComponentActivity() {
                                                     },
                                                     keyHeight = 32.dp,
                                                     accentColor = currentTheme.accentColor,
+                                                    hapticsEnabled = hapticsEnabled,
                                                     modifier = Modifier.wrapContentHeight()
                                                 )
                                             } else {
