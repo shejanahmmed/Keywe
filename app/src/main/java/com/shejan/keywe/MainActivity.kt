@@ -94,19 +94,21 @@ class MainActivity : ComponentActivity() {
                 val discoveredDevices by hidManager.discoveredDevices.collectAsState()
                 val lastError by hidManager.lastError.collectAsState()
 
-                var currentMode by remember { mutableStateOf(ControlMode.SPLIT) }
-                var selectedKeyboardType by remember { mutableStateOf(KeyboardType.TACTILE) }
-                var currentTheme by remember { mutableStateOf(AppThemePreset.MONOCHROME_DARK) }
-                var sensitivity by remember { mutableFloatStateOf(1.2f) }
-                var hapticsEnabled by remember { mutableStateOf(true) }
-                var showDeviceDialog by remember { mutableStateOf(false) }
-                var showKeyboardTypeDialog by remember { mutableStateOf(false) }
-                var showSettingsDialog by remember { mutableStateOf(false) }
-
                 val context = LocalContext.current
                 val activity = context as? Activity
                 val configuration = LocalConfiguration.current
                 val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+                val prefs = remember { context.getSharedPreferences("keywe_prefs", Context.MODE_PRIVATE) }
+
+                var currentMode by remember { mutableStateOf(ControlMode.SPLIT) }
+                var selectedKeyboardType by remember { mutableStateOf(KeyboardType.TACTILE) }
+                var currentTheme by remember { mutableStateOf(AppThemePreset.MONOCHROME_DARK) }
+                var sensitivity by remember { mutableFloatStateOf(prefs.getFloat("touchpad_sensitivity", 1.2f)) }
+                var hapticsEnabled by remember { mutableStateOf(prefs.getBoolean("haptics_enabled", true)) }
+                var showDeviceDialog by remember { mutableStateOf(false) }
+                var showKeyboardTypeDialog by remember { mutableStateOf(false) }
+                var showSettingsDialog by remember { mutableStateOf(false) }
 
                 fun toggleOrientation() {
                     activity?.requestedOrientation = if (isLandscape) {
@@ -116,7 +118,6 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                val prefs = remember { context.getSharedPreferences("keywe_prefs", Context.MODE_PRIVATE) }
                 var showOnboarding by remember { mutableStateOf(!prefs.getBoolean("onboarding_shown", false)) }
 
                 if (showOnboarding) {
@@ -438,9 +439,15 @@ class MainActivity : ComponentActivity() {
                             currentTheme = currentTheme,
                             onSelectTheme = { currentTheme = it },
                             sensitivity = sensitivity,
-                            onSensitivityChange = { sensitivity = it },
+                            onSensitivityChange = { newSens ->
+                                sensitivity = newSens
+                                prefs.edit().putFloat("touchpad_sensitivity", newSens).apply()
+                            },
                             hapticsEnabled = hapticsEnabled,
-                            onHapticsToggle = { hapticsEnabled = it },
+                            onHapticsToggle = { newHaptics ->
+                                hapticsEnabled = newHaptics
+                                prefs.edit().putBoolean("haptics_enabled", newHaptics).apply()
+                            },
                             onDismiss = { showSettingsDialog = false }
                         )
                     }

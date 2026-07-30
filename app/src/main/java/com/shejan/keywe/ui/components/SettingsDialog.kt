@@ -183,8 +183,8 @@ fun SettingsDialog(
                                     Slider(
                                         value = sensitivity,
                                         onValueChange = onSensitivityChange,
-                                        valueRange = 0.5f..2.5f,
-                                        steps = 19,
+                                        valueRange = 0.5f..3.5f,
+                                        steps = 29,
                                         colors = SliderDefaults.colors(
                                             thumbColor = currentTheme.accentColor,
                                             activeTrackColor = currentTheme.accentColor,
@@ -196,7 +196,7 @@ fun SettingsDialog(
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                                     ) {
-                                        val presets = listOf(0.8f, 1.0f, 1.2f, 1.5f, 2.0f)
+                                        val presets = listOf(0.8f, 1.0f, 1.5f, 2.0f, 3.0f)
                                         presets.forEach { p ->
                                             TactileButton(
                                                 text = "${p}x",

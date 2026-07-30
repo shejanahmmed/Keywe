@@ -3,7 +3,9 @@ package com.shejan.keywe.ui.keyboard
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -17,6 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.TextRange
@@ -220,13 +223,77 @@ fun SystemKeyboardSurface(
             )
             TactileButton(
                 text = "ENTER",
-                onClick = { sendKeyPress(0, 0x28.toByte()) },
+                onClick = {
+                    val updated = tfValue.text + "\n"
+                    tfValue = TextFieldValue(text = updated, selection = TextRange(updated.length))
+                    sendKeyPress(0, 0x28.toByte())
+                },
                 modifier = Modifier.weight(1f)
             )
             TactileButton(
                 text = "CLEAR",
                 onClick = { tfValue = TextFieldValue("", selection = TextRange(0)) },
                 modifier = Modifier.weight(1f),
+                accentColor = SignalRed
+            )
+        }
+
+        // Scrollable Emoji Strip & Dedicated Line Break Button Row
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Scrollable Emoji Bar
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(42.dp)
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(PitchBlack)
+                    .border(1.dp, GraphiteBorder, RoundedCornerShape(6.dp))
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 6.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                val emojis = listOf("😊", "😂", "❤️", "👍", "🔥", "🎉", "🚀", "🙏", "👏", "😎", "💯", "✨", "💡", "✅", "😃", "🤩", "😍", "🥳")
+                emojis.forEach { emoji ->
+                    Box(
+                        modifier = Modifier
+                            .size(34.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(CharcoalDark)
+                            .border(1.dp, GraphiteBorder, RoundedCornerShape(4.dp))
+                            .clickable {
+                                val updated = tfValue.text + emoji
+                                tfValue = TextFieldValue(text = updated, selection = TextRange(updated.length))
+                                for (ch in emoji) {
+                                    val hidKey = KeycodeConverter.charToHidKey(ch)
+                                    if (hidKey != null) {
+                                        sendKeyPress(hidKey.first, hidKey.second)
+                                    }
+                                }
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = emoji,
+                            fontSize = 15.sp
+                        )
+                    }
+                }
+            }
+
+            // Right Side Dedicated Line Break Button
+            TactileButton(
+                text = "LINE BREAK",
+                onClick = {
+                    val updated = tfValue.text + "\n"
+                    tfValue = TextFieldValue(text = updated, selection = TextRange(updated.length))
+                    sendKeyPress(0, 0x28.toByte())
+                },
+                modifier = Modifier.width(105.dp),
                 accentColor = SignalRed
             )
         }
