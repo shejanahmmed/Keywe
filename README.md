@@ -32,8 +32,13 @@ Unlike traditional remote control apps, **Keywe requires ZERO software, drivers,
 - **Plug-and-Play Out-of-the-Box**: Works seamlessly with **Windows 10/11**, **macOS**, **Linux**, **ChromeOS**, **Android TV**, and **Game Consoles**.
 - **No Background PC Drivers**: Zero server app or host script installation required.
 
-### 🌟 3-Page Animated Onboarding Experience
-- **Interactive First-Launch Guide**: A sleek 3-page welcome flow introducing zero-host HID connectivity, the 75% mechanical input deck, and instant pairing.
+### 📖 Interactive Step-by-Step User Guide
+- **In-App User Guide Modal**: Access the complete **`USER GUIDE // HOW TO USE`** modal directly inside the Settings menu.
+- **Custom 2D Vector Icons**: Visual step cards illustrating Bluetooth pairing, multi-touch trackpad gestures, 75% mechanical deck, system soft IME & emojis, and sensitivity controls.
+
+### 🌟 Sleek Onboarding Experience
+- **Interactive First-Launch Guide**: High-impact welcome flow introducing zero-host HID connectivity, the 75% mechanical input deck, and instant pairing.
+- **Deferred System Permissions**: Bluetooth permissions are requested seamlessly **after** completing the welcome pages for an un-interrupted first launch.
 - **Custom Cyber Animations**: Features a real-time animated radar pulse, a glowing 4x3 mechanical deck simulation, and a hollow red breathing logo ring.
 
 ### ⌨️ Full 75% Mechanical Keyboard Layout
@@ -42,33 +47,21 @@ Unlike traditional remote control apps, **Keywe requires ZERO software, drivers,
 - **Full Modifier & Hotkey Support**: Native support for `Ctrl`, `Alt`, `Shift`, `Win`, and `Fn` combinations.
 
 ### 🖱️ Multi-Touch Gesture Trackpad with Integrated Click Zones
-- **Smooth Cursor Navigation**: Dynamic relative delta pointer tracking with customizable sensitivity (`0.5x` - `2.5x`).
+- **Smooth Cursor Navigation**: Dynamic relative delta pointer tracking with customizable sensitivity (`0.5x` - `3.5x`).
 - **Natural Gestures**:
   - **Single-finger tap**: Left Click
   - **Two-finger tap**: Right Click
   - **Two-finger vertical swipe**: Smooth Vertical Scrolling
 - **Integrated Click Zones**: `[ L-CLICK ]` and `[ R-CLICK ]` click zones built directly into the bottom of the trackpad surface with dual-trigger haptic vibration pulses.
 
-### 🔄 Dynamic Orientation & Custom Rotate Controls
-- **One-Tap Orientation Switcher**: Integrated custom rotation control button in the header bar to seamlessly flip between Portrait and Landscape modes.
-- **Landscape Widescreen Split View**: Left side multi-touch trackpad + Right side 75% mechanical keyboard deck for ergonomic two-handed control.
-
-### ⚡ Overhauled Dual-Executor Bluetooth HID Engine
-- **High-Priority Report Executor**: Dedicated single-thread foreground executor for zero-latency input transmission without UI stutter.
-- **Real-Time Link Verification**: Queries `getDevicesMatchingConnectionStates()` live to ensure accurate status tracking across app reopens.
-- **Remote Disconnect Detection**: Listens to `ACTION_ACL_DISCONNECTED` events to immediately update state when PC Bluetooth is turned off or out of range.
-- **Smooth Auto-Retry Connection**: Auto-retries connection negotiation and prevents system Toast disconnect glitches.
-
-### 📜 Continuous Marquee Status Ticker
-- **Never Truncated**: Long status and error messages automatically scroll horizontally (`basicMarquee()`) across the header bar, with automatic `SignalRed` highlighting for errors.
-
-### 📱 Dual Keyboard Engines (Tactile + Phone IME)
+### 📱 Dual Keyboard Engines & Emoji Bar
 - **Built-in Tactile Keyboard**: Monochrome retro mechanical keycaps with haptic feedback.
 - **System Soft Keyboard (Phone IME)**: Long-press **`[ KEYBOARD ]`** mode button to use your phone's default input method (voice typing, swipe, Gboard, SwiftKey).
+- **Emoji Bar & Line Break**: Horizontally scrollable emoji strip (`😊`, `😂`, `❤️`, `👍`, `🔥`, `🎉`, etc.) and dedicated **`LINE BREAK`** button for instant newline insertion.
 
-### ⚙️ Minimalist Tactile Theme & Preferences
+### ⚙️ Persistent Preferences & Theme Customization
+- **Persistent SharedPreferences**: Automatically saves touchpad sensitivity (`0.5x` - `3.5x`) and haptic feedback settings across app restarts.
 - **Curated Color Themes**: `MONOCHROME DARK`, `MATRIX GREEN`, `CYBER AMBER`, `TACTILE WHITE`.
-- **Haptic Feedback Toggle**: Dual-trigger `LocalHapticFeedback` + native 25ms `Vibrator` pulses with custom track styling.
 - **Direct Privacy Policy Access**: In-app link to official Privacy Policy at [https://www.farjan.me/KeywePrivacyPolicy/](https://www.farjan.me/KeywePrivacyPolicy/).
 
 ---
