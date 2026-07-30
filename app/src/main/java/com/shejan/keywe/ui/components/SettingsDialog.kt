@@ -45,6 +45,7 @@ fun SettingsDialog(
     onDismiss: () -> Unit
 ) {
     var activeTab by remember { mutableIntStateOf(0) } // 0 = Theme, 1 = Modify, 2 = About
+    var showUserGuide by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     Dialog(
@@ -300,6 +301,13 @@ fun SettingsDialog(
                                     )
                                 }
 
+                                TactileButton(
+                                    text = "USER GUIDE // HOW TO USE",
+                                    onClick = { showUserGuide = true },
+                                    accentColor = currentTheme.accentColor,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -356,6 +364,13 @@ fun SettingsDialog(
                     modifier = Modifier.fillMaxWidth()
                 )
             }
+        }
+
+        if (showUserGuide) {
+            UserGuideDialog(
+                accentColor = currentTheme.accentColor,
+                onDismiss = { showUserGuide = false }
+            )
         }
     }
 }
