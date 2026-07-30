@@ -8,7 +8,7 @@
 
 *Turn your Android smartphone into a zero-latency, hardware-emulated Bluetooth Keyboard and Multi-Touch Trackpad — with zero host software required on your PC.*
 
-[![Platform](https://img.shields.io/badge/Platform-Android%209.0%2B-00E676?style=for-the-badge&logo=android&logoColor=white)](https://developer.android.com)
+[![Platform](https://img.shields.io/badge/Platform-Android%207.0%2B-00E676?style=for-the-badge&logo=android&logoColor=white)](https://developer.android.com)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0.0-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org)
 [![Compose](https://img.shields.io/badge/Jetpack%20Compose-1.7.0-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose)
 [![License](https://img.shields.io/badge/License-MIT-FFFF2A2A?style=for-the-badge)](LICENSE)
@@ -25,19 +25,20 @@ Unlike traditional remote control apps, **Keywe requires ZERO software, drivers,
 
 ---
 
-## ✨ Features
+## ✨ Key Features & Capabilities
 
 ### 💻 Zero Host Setup
 - **Plug-and-Play Out-of-the-Box**: Works seamlessly with **Windows 10/11**, **macOS**, **Linux**, **ChromeOS**, **Android TV**, and **Game Consoles**.
 - **No Background PC Drivers**: Zero server app or host script installation required.
 
-### ⌨️ 75% Mechanical Keyboard Deck
-- **Authentic Physical Proportions**: Wide physical spacebar (`5.5x`), accented **Signal Red ESC** keycap, bottom-row modifiers (`CTRL`, `WIN`, `ALT`), and dedicated arrow keys cluster (`▲ ▼ ◄ ►`).
-- **Quick Macro Shortcuts**: Dedicated hotkey caps for `WIN+D`, `ALT+TAB`, `WIN+L`, `COPY`, `PASTE`, and `BKSP`.
+### ⌨️ Full 75% Mechanical Keyboard Layout
+- **Authentic Physical Proportions**: Complete 75% layout with Function Keys row (`F1` - `F12`), `Esc` (Signal Red), `Del`, `Enter` (Signal Red), and dedicated arrow cluster (`▲`, `◄`, `▼`, `►`).
+- **Tactile Spacebar**: Wide light-grey spacebar with bold "SPACE" labeling for effortless thumb typing.
+- **Full Modifier & Hotkey Support**: Native support for `Ctrl`, `Alt`, `Shift`, `Win`, and `Fn` combinations.
 
-### 🔄 Landscape Widescreen & Side-by-Side Split View
-- **Ergonomic Two-Handed Typing**: Rotate device horizontally to transform phone or tablet into a physical-feel two-handed keyboard deck.
-- **Side-by-Side Split View**: Left 42% width for Touchpad & click pads + Right 58% width for Mechanical Keyboard Deck.
+### 🔄 Dynamic Orientation & Custom Rotate Controls
+- **One-Tap Orientation Switcher**: Integrated custom rotation control button in the header bar to seamlessly flip between Portrait and Landscape modes.
+- **Landscape Widescreen Split View**: Left side multi-touch trackpad + Right side 75% mechanical keyboard deck for ergonomic two-handed control.
 
 ### 🖱️ Multi-Touch Gesture Trackpad
 - **Smooth Cursor Navigation**: Dynamic relative delta pointer tracking with customizable sensitivity (`0.5x` - `2.5x`).
@@ -45,14 +46,24 @@ Unlike traditional remote control apps, **Keywe requires ZERO software, drivers,
   - **Single-finger tap**: Left Click
   - **Two-finger tap**: Right Click
   - **Two-finger vertical swipe**: Smooth Vertical Scrolling
-- **Tactile Click Pads**: Dedicated `[ L-CLICK ]` and `[ R-CLICK ]` hardware buttons.
+- **Tactile Click Pads**: Dedicated `[ L-CLICK ]` and `[ R-CLICK ]` hardware buttons with dual-trigger haptic vibration pulses.
 
-### 📱 System Soft Keyboard (PHONE IME) Engine
-- **Default Phone Keyboard Integration**: Click and hold (long-press) the **`[ KEYBOARD ]`** mode button to switch to System Keyboard mode. Type using any default phone soft keyboard (Gboard, SwiftKey, Samsung Keyboard, Voice Input, or Swipe).
+### ⚡ Overhauled Dual-Executor Bluetooth HID Engine
+- **High-Priority Report Executor**: Dedicated single-thread foreground executor for zero-latency input transmission without UI stutter.
+- **Real-Time Link Verification**: Queries `getDevicesMatchingConnectionStates()` live to ensure accurate status tracking across app reopens.
+- **Remote Disconnect Detection**: Listens to `ACTION_ACL_DISCONNECTED` events to immediately update state when PC Bluetooth is turned off or out of range.
+- **Smooth Auto-Retry Connection**: Auto-retries connection negotiation and prevents system Toast disconnect glitches.
 
-### ⚙️ Theme & Preferences Modal
-- **Preset Accent Palettes**: `MONOCHROME RED`, `MATRIX GREEN`, `CYBER AMBER`, `TACTILE WHITE`.
-- **In-App Documents**: Integrated License & Privacy Policy access.
+### 📜 Continuous Marquee Status Ticker
+- **Never Truncated**: Long status and error messages automatically scroll horizontally (`basicMarquee()`) across the header bar, with automatic `SignalRed` highlighting for errors.
+
+### 📱 Dual Keyboard Engines (Tactile + Phone IME)
+- **Built-in Tactile Keyboard**: Monochrome retro mechanical keycaps with haptic feedback.
+- **System Soft Keyboard (Phone IME)**: Long-press **`[ KEYBOARD ]`** mode button to use your phone's default input method (voice typing, swipe, Gboard, SwiftKey).
+
+### ⚙️ Minimalist Tactile Theme & Preferences
+- **Curated Color Themes**: `MONOCHROME DARK`, `MATRIX GREEN`, `CYBER AMBER`, `TACTILE WHITE`.
+- **Haptic Feedback Toggle**: Dual-trigger `LocalHapticFeedback` + native 25ms `Vibrator` pulses with custom track styling.
 
 ---
 
@@ -61,13 +72,13 @@ Unlike traditional remote control apps, **Keywe requires ZERO software, drivers,
 ```
            +-------------------------------------------------------+
            |                 Keywe Android App                     |
-           |  (Jetpack Compose UI + Dot-Matrix Design System)      |
+           |   (Jetpack Compose UI + Dot-Matrix Design System)     |
            +-------------------------------------------------------+
                                        |
                                        v
            +-------------------------------------------------------+
            |               BluetoothHidManager Engine              |
-           |   (4-Stage Resilient SDP Registration & QoS Fallback) |
+           |   (Dual-Executor Architecture + Live State Sync)      |
            +-------------------------------------------------------+
                                        |
                                        v
@@ -76,7 +87,7 @@ Unlike traditional remote control apps, **Keywe requires ZERO software, drivers,
            |      (Report ID 1: Mouse | Report ID 2: Keyboard)     |
            +-------------------------------------------------------+
                                        |
-                           Bluetooth L2CAP Link
+                            Bluetooth L2CAP Link
                                        |
                                        v
            +-------------------------------------------------------+
@@ -103,11 +114,10 @@ Unlike traditional remote control apps, **Keywe requires ZERO software, drivers,
 - A host PC/laptop with Bluetooth capability.
 
 ### Connection Steps
-1. **Unpair Previous Sessions**: If your phone was previously paired with your PC, remove it under **Windows Settings -> Bluetooth & devices**.
-2. **Launch Keywe**: Open **Keywe** on your phone (verify status header displays `🔴 PAIRED / READY`).
-3. **Make Discoverable**: Tap **"MAKE DISCOVERABLE"** inside the app.
-4. **Pair from Host PC**: On your computer, click **Add Bluetooth Device** and select your phone.
-5. **Start Remote Control**: Use the **Touchpad**, **Split View**, or **Keyboard** modes to control your PC instantly!
+1. **Launch Keywe**: Open **Keywe** on your phone (verify status header displays `🔴 PAIRED / READY`).
+2. **Open Device Manager**: Tap the LED status badge in the top header.
+3. **Select or Pair PC**: Tap your PC under **PAIRED** or search under **NEARBY** tab.
+4. **Disconnect Anytime**: Tap **`DISCONNECT`** directly on any active device card to drop the link.
 
 ---
 
