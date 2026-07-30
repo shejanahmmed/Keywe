@@ -67,168 +67,185 @@ fun TouchpadSurface(
 
     val state = remember { TouchState() }
 
+    // Unified Modern Trackpad Deck Module
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(10.dp))
+            .clip(RoundedCornerShape(12.dp))
             .background(CharcoalDark)
-            .border(1.dp, GraphiteBorder, RoundedCornerShape(10.dp))
-            .padding(8.dp)
+            .border(1.dp, GraphiteBorder, RoundedCornerShape(12.dp))
+            .padding(4.dp)
     ) {
-        // Touchpad Active Field
-        Box(
+        // Integrated Trackpad Container
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .clip(RoundedCornerShape(6.dp))
+                .fillMaxSize()
+                .clip(RoundedCornerShape(8.dp))
                 .background(PitchBlack)
-                .border(1.dp, GraphiteSubtle, RoundedCornerShape(6.dp))
-                .pointerInteropFilter { event ->
-                    val pointerCount = event.pointerCount
-
-                    when (event.actionMasked) {
-                        MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
-                            state.lastX = event.x
-                            state.lastY = event.y
-                            state.touchDownTime = System.currentTimeMillis()
-                            state.isDragging = false
-                        }
-
-                        MotionEvent.ACTION_MOVE -> {
-                            val dxRaw = (event.x - state.lastX) * sensitivity
-                            val dyRaw = (event.y - state.lastY) * sensitivity
-
-                            if (kotlin.math.abs(dxRaw) > 1 || kotlin.math.abs(dyRaw) > 1) {
-                                state.isDragging = true
-                            }
-
-                            state.lastX = event.x
-                            state.lastY = event.y
-
-                            if (pointerCount == 1) {
-                                // Cursor Movement
-                                val dxByte = dxRaw.coerceIn(-127f, 127f).roundToInt().toByte()
-                                val dyByte = dyRaw.coerceIn(-127f, 127f).roundToInt().toByte()
-                                if (dxByte != 0.toByte() || dyByte != 0.toByte()) {
-                                    onMouseInput(0, dxByte, dyByte, 0)
-                                }
-                            } else if (pointerCount == 2) {
-                                // Two-Finger Vertical Scroll
-                                val wheelByte = (-dyRaw).coerceIn(-127f, 127f).roundToInt().toByte()
-                                if (wheelByte != 0.toByte()) {
-                                    onMouseInput(0, 0, 0, wheelByte)
-                                }
-                            }
-                        }
-
-                        MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP -> {
-                            val duration = System.currentTimeMillis() - state.touchDownTime
-
-                            // Tap Detection (< 200ms without dragging)
-                            if (!state.isDragging && duration < 200) {
-                                triggerHapticPulse()
-                                if (pointerCount == 1) {
-                                    // Single Finger Tap -> Left Click
-                                    onMouseInput(HidReportDescriptor.MOUSE_BUTTON_LEFT, 0, 0, 0)
-                                    onMouseInput(0, 0, 0, 0) // Release
-                                } else if (pointerCount == 2) {
-                                    // Two Finger Tap -> Right Click
-                                    onMouseInput(HidReportDescriptor.MOUSE_BUTTON_RIGHT, 0, 0, 0)
-                                    onMouseInput(0, 0, 0, 0) // Release
-                                }
-                            }
-                        }
-                    }
-                    true
-                },
-            contentAlignment = Alignment.Center
+                .border(1.dp, GraphiteSubtle, RoundedCornerShape(8.dp))
         ) {
-            // Subtle Dot Grid background on touchpad field (renders once, zero recomposition overhead)
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                val step = 24.dp.toPx()
-                val dotColor = MonochromeDarkText.copy(alpha = 0.35f)
-                val dotRadius = 1.dp.toPx()
-                for (x in 0..size.width.toInt() step step.toInt()) {
-                    for (y in 0..size.height.toInt() step step.toInt()) {
-                        drawCircle(
-                            color = dotColor,
-                            radius = dotRadius,
-                            center = Offset(x.toFloat(), y.toFloat())
-                        )
+            // Touchpad Active Field (Touch Surface)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .pointerInteropFilter { event ->
+                        val pointerCount = event.pointerCount
+
+                        when (event.actionMasked) {
+                            MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
+                                state.lastX = event.x
+                                state.lastY = event.y
+                                state.touchDownTime = System.currentTimeMillis()
+                                state.isDragging = false
+                            }
+
+                            MotionEvent.ACTION_MOVE -> {
+                                val dxRaw = (event.x - state.lastX) * sensitivity
+                                val dyRaw = (event.y - state.lastY) * sensitivity
+
+                                if (kotlin.math.abs(dxRaw) > 1 || kotlin.math.abs(dyRaw) > 1) {
+                                    state.isDragging = true
+                                }
+
+                                state.lastX = event.x
+                                state.lastY = event.y
+
+                                if (pointerCount == 1) {
+                                    // Cursor Movement
+                                    val dxByte = dxRaw.coerceIn(-127f, 127f).roundToInt().toByte()
+                                    val dyByte = dyRaw.coerceIn(-127f, 127f).roundToInt().toByte()
+                                    if (dxByte != 0.toByte() || dyByte != 0.toByte()) {
+                                        onMouseInput(0, dxByte, dyByte, 0)
+                                    }
+                                } else if (pointerCount == 2) {
+                                    // Two-Finger Vertical Scroll
+                                    val wheelByte = (-dyRaw).coerceIn(-127f, 127f).roundToInt().toByte()
+                                    if (wheelByte != 0.toByte()) {
+                                        onMouseInput(0, 0, 0, wheelByte)
+                                    }
+                                }
+                            }
+
+                            MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP -> {
+                                val duration = System.currentTimeMillis() - state.touchDownTime
+
+                                // Tap Detection (< 200ms without dragging)
+                                if (!state.isDragging && duration < 200) {
+                                    triggerHapticPulse()
+                                    if (pointerCount == 1) {
+                                        // Single Finger Tap -> Left Click
+                                        onMouseInput(HidReportDescriptor.MOUSE_BUTTON_LEFT, 0, 0, 0)
+                                        onMouseInput(0, 0, 0, 0) // Release
+                                    } else if (pointerCount == 2) {
+                                        // Two Finger Tap -> Right Click
+                                        onMouseInput(HidReportDescriptor.MOUSE_BUTTON_RIGHT, 0, 0, 0)
+                                        onMouseInput(0, 0, 0, 0) // Release
+                                    }
+                                }
+                            }
+                        }
+                        true
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                // Subtle Dot Grid background on touchpad field
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val step = 24.dp.toPx()
+                    val dotColor = MonochromeDarkText.copy(alpha = 0.35f)
+                    val dotRadius = 1.dp.toPx()
+                    for (x in 0..size.width.toInt() step step.toInt()) {
+                        for (y in 0..size.height.toInt() step step.toInt()) {
+                            drawCircle(
+                                color = dotColor,
+                                radius = dotRadius,
+                                center = Offset(x.toFloat(), y.toFloat())
+                            )
+                        }
                     }
                 }
+
+                Text(
+                    text = "TOUCHPAD :: MULTI-TOUCH SURFACE",
+                    style = DotMatrixTypography.labelSmall.copy(fontSize = 10.sp),
+                    color = MonochromeDarkText,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
 
-            Text(
-                text = "TOUCHPAD :: MULTI-TOUCH SURFACE",
-                style = DotMatrixTypography.labelSmall.copy(fontSize = 10.sp),
-                color = MonochromeDarkText,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+            // Subtle Horizontal Divider Line
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(GraphiteSubtle)
             )
-        }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Hardware Left & Right Click Tactile Pads
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(42.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            // Left Click Pad
-            Box(
+            // Integrated Bottom Click Zone (L-CLICK & R-CLICK built directly into the trackpad)
+            Row(
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(GraphiteSubtle)
-                    .border(1.dp, GraphiteBorder, RoundedCornerShape(6.dp))
-                    .clickable {
-                        triggerHapticPulse()
-                        onMouseInput(HidReportDescriptor.MOUSE_BUTTON_LEFT, 0, 0, 0)
-                        onMouseInput(0, 0, 0, 0)
-                    },
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .height(42.dp)
+                    .background(CharcoalDark)
             ) {
-                Text(
-                    text = "[ L-CLICK ]",
-                    style = DotMatrixTypography.labelSmall.copy(
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 11.sp
-                    ),
-                    color = MonochromeWhite,
-                    maxLines = 1,
-                    softWrap = false
-                )
-            }
+                // Integrated Left Click Zone
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .clickable {
+                            triggerHapticPulse()
+                            onMouseInput(HidReportDescriptor.MOUSE_BUTTON_LEFT, 0, 0, 0)
+                            onMouseInput(0, 0, 0, 0)
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "[ L-CLICK ]",
+                        style = DotMatrixTypography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 11.sp,
+                            letterSpacing = 0.5.sp
+                        ),
+                        color = MonochromeWhite,
+                        maxLines = 1,
+                        softWrap = false
+                    )
+                }
 
-            // Right Click Pad
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(GraphiteSubtle)
-                    .border(1.dp, GraphiteBorder, RoundedCornerShape(6.dp))
-                    .clickable {
-                        triggerHapticPulse()
-                        onMouseInput(HidReportDescriptor.MOUSE_BUTTON_RIGHT, 0, 0, 0)
-                        onMouseInput(0, 0, 0, 0)
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "[ R-CLICK ]",
-                    style = DotMatrixTypography.labelSmall.copy(
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 11.sp
-                    ),
-                    color = MonochromeWhite,
-                    maxLines = 1,
-                    softWrap = false
+                // Vertical Divider Line between Left & Right Click
+                Box(
+                    modifier = Modifier
+                        .width(1.dp)
+                        .fillMaxHeight()
+                        .background(GraphiteSubtle)
                 )
+
+                // Integrated Right Click Zone
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .clickable {
+                            triggerHapticPulse()
+                            onMouseInput(HidReportDescriptor.MOUSE_BUTTON_RIGHT, 0, 0, 0)
+                            onMouseInput(0, 0, 0, 0)
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "[ R-CLICK ]",
+                        style = DotMatrixTypography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 11.sp,
+                            letterSpacing = 0.5.sp
+                        ),
+                        color = MonochromeWhite,
+                        maxLines = 1,
+                        softWrap = false
+                    )
+                }
             }
         }
     }

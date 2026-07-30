@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
@@ -113,6 +114,25 @@ class MainActivity : ComponentActivity() {
                     } else {
                         ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
                     }
+                }
+
+                val prefs = remember { context.getSharedPreferences("keywe_prefs", Context.MODE_PRIVATE) }
+                var showOnboarding by remember { mutableStateOf(!prefs.getBoolean("onboarding_shown", false)) }
+
+                if (showOnboarding) {
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = PitchBlack
+                    ) {
+                        OnboardingScreen(
+                            onFinish = {
+                                prefs.edit().putBoolean("onboarding_shown", true).apply()
+                                showOnboarding = false
+                            },
+                            accentColor = currentTheme.accentColor
+                        )
+                    }
+                    return@KeyweTheme
                 }
 
                 Surface(
