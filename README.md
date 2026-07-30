@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="app/src/main/res/drawable/ic_logo_light.png" width="120" height="120" alt="Keywe Logo" />
+<img src="app/src/main/res/drawable/keywe_icon.png" width="120" height="120" alt="Keywe Logo" />
 
 # KEYWE
 

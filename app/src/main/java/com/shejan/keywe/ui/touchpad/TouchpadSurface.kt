@@ -101,10 +101,13 @@ fun TouchpadSurface(
                             }
 
                             MotionEvent.ACTION_MOVE -> {
-                                val dxRaw = (event.x - state.lastX) * sensitivity
-                                val dyRaw = (event.y - state.lastY) * sensitivity
+                                val deltaX = event.x - state.lastX
+                                val deltaY = event.y - state.lastY
 
-                                if (kotlin.math.abs(dxRaw) > 1 || kotlin.math.abs(dyRaw) > 1) {
+                                val dxRaw = deltaX * sensitivity
+                                val dyRaw = deltaY * sensitivity
+
+                                if (kotlin.math.abs(deltaX) > 0.5f || kotlin.math.abs(deltaY) > 0.5f) {
                                     state.isDragging = true
                                 }
 
