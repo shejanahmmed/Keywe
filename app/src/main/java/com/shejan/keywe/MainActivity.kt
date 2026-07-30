@@ -717,11 +717,20 @@ fun DeviceManagerDialog(
                                     device.address
                                 }
 
+                                val isDeviceConnected = isConnected && (connectedDeviceName == deviceName || connectedDeviceName == device.address)
+
                                 DeviceItemCard(
                                     name = deviceName,
                                     address = device.address,
                                     isBonded = true,
-                                    onClick = { onSelectDevice(device) }
+                                    isConnected = isDeviceConnected,
+                                    onClick = {
+                                        if (isDeviceConnected) {
+                                            onDisconnect()
+                                        } else {
+                                            onSelectDevice(device)
+                                        }
+                                    }
                                 )
                             }
                         }
@@ -775,11 +784,20 @@ fun DeviceManagerDialog(
                                     false
                                 }
 
+                                val isDeviceConnected = isConnected && (connectedDeviceName == deviceName || connectedDeviceName == device.address)
+
                                 DeviceItemCard(
                                     name = deviceName,
                                     address = device.address,
                                     isBonded = isDeviceBonded,
-                                    onClick = { onSelectDevice(device) }
+                                    isConnected = isDeviceConnected,
+                                    onClick = {
+                                        if (isDeviceConnected) {
+                                            onDisconnect()
+                                        } else {
+                                            onSelectDevice(device)
+                                        }
+                                    }
                                 )
                             }
                         }
@@ -829,6 +847,7 @@ fun DeviceItemCard(
     name: String,
     address: String,
     isBonded: Boolean,
+    isConnected: Boolean = false,
     onClick: () -> Unit
 ) {
     Row(
@@ -836,7 +855,11 @@ fun DeviceItemCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(6.dp))
             .background(PitchBlack)
-            .border(1.dp, GraphiteBorder, RoundedCornerShape(6.dp))
+            .border(
+                1.dp,
+                if (isConnected) MatrixGreen else GraphiteBorder,
+                RoundedCornerShape(6.dp)
+            )
             .clickable { onClick() }
             .padding(10.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -865,11 +888,25 @@ fun DeviceItemCard(
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Text(
-                text = if (isBonded) "CONNECT" else "PAIR & CONNECT",
+                text = when {
+                    isConnected -> "DISCONNECT"
+                    isBonded -> "CONNECT"
+                    else -> "PAIR & CONNECT"
+                },
                 style = DotMatrixTypography.labelSmall.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold),
-                color = if (isBonded) MatrixGreen else SignalRed
+                color = when {
+                    isConnected -> SignalRed
+                    isBonded -> MatrixGreen
+                    else -> SignalRed
+                }
             )
-            StatusIndicatorDot(color = if (isBonded) MatrixGreen else AmberWarning)
+            StatusIndicatorDot(
+                color = when {
+                    isConnected -> MatrixGreen
+                    isBonded -> MatrixGreen
+                    else -> AmberWarning
+                }
+            )
         }
     }
 }
