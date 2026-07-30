@@ -4,6 +4,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -28,37 +29,24 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.shejan.keywe.ui.theme.*
 
+import androidx.compose.material3.Icon
+import androidx.compose.ui.res.painterResource
+import com.shejan.keywe.R
+
 /**
- * Custom 2D Canvas Screen Rotation Icon graphic.
+ * Rotate Icon graphic using R.drawable.rotate.
  */
 @Composable
 fun ScreenRotationGraphic(
     modifier: Modifier = Modifier,
     tint: Color = MonochromeWhite
 ) {
-    Canvas(modifier = modifier.size(15.dp)) {
-        val strokePx = 1.6.dp.toPx()
-        val radius = size.minDimension * 0.40f
-        val center = Offset(size.width / 2f, size.height / 2f)
-
-        drawArc(
-            color = tint,
-            startAngle = -30f,
-            sweepAngle = 260f,
-            useCenter = false,
-            style = Stroke(width = strokePx, cap = StrokeCap.Round),
-            topLeft = Offset(center.x - radius, center.y - radius),
-            size = Size(radius * 2, radius * 2)
-        )
-
-        drawRoundRect(
-            color = tint,
-            topLeft = Offset(center.x - radius * 0.45f, center.y - radius * 0.65f),
-            size = Size(radius * 0.9f, radius * 1.3f),
-            cornerRadius = CornerRadius(2.dp.toPx()),
-            style = Stroke(width = 1.2.dp.toPx())
-        )
-    }
+    Icon(
+        painter = painterResource(id = R.drawable.rotate),
+        contentDescription = "Rotate Orientation",
+        tint = tint,
+        modifier = modifier.size(15.dp)
+    )
 }
 
 /**
@@ -124,7 +112,7 @@ fun DotMatrixHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(modifier = Modifier.weight(1f, fill = false)) {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title.uppercase(),
                 style = DotMatrixTypography.headlineMedium,
@@ -135,9 +123,15 @@ fun DotMatrixHeader(
                 Text(
                     text = subtitle.uppercase(),
                     style = DotMatrixTypography.labelSmall.copy(fontSize = 10.sp),
-                    color = MonochromeMuted,
+                    color = if (subtitle.startsWith("ERR", ignoreCase = true)) SignalRed else MonochromeMuted,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .basicMarquee(
+                            iterations = Int.MAX_VALUE,
+                            repeatDelayMillis = 1000,
+                            initialDelayMillis = 500
+                        )
                 )
             }
         }
