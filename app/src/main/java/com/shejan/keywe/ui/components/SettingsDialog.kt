@@ -337,7 +337,7 @@ fun SettingsDialog(
                                     TactileButton(
                                         text = "PRIVACY POLICY",
                                         onClick = {
-                                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/shejanahmmed/Keywe"))
+                                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.farjan.me/KeywePrivacyPolicy/"))
                                             try { context.startActivity(intent) } catch (_: Exception) {}
                                         },
                                         modifier = Modifier.weight(1.3f)

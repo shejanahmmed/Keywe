@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="app/src/main/res/drawable/keywe_icon.png" width="120" height="120" alt="Keywe Logo" />
+<img src="app/src/main/res/drawable/ic_logo_light.png" width="120" height="120" alt="Keywe Logo" />
 
 # KEYWE
 
@@ -11,7 +11,8 @@
 [![Platform](https://img.shields.io/badge/Platform-Android%207.0%2B-00E676?style=for-the-badge&logo=android&logoColor=white)](https://developer.android.com)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0.0-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org)
 [![Compose](https://img.shields.io/badge/Jetpack%20Compose-1.7.0-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose)
-[![License](https://img.shields.io/badge/License-MIT-FFFF2A2A?style=for-the-badge)](LICENSE)
+[![Privacy Policy](https://img.shields.io/badge/Privacy--Policy-Live-0A66C2?style=for-the-badge)](https://www.farjan.me/KeywePrivacyPolicy/)
+[![License](https://img.shields.io/badge/License-GPL--3.0-FFFF2A2A?style=for-the-badge)](LICENSE)
 
 ---
 
@@ -31,22 +32,26 @@ Unlike traditional remote control apps, **Keywe requires ZERO software, drivers,
 - **Plug-and-Play Out-of-the-Box**: Works seamlessly with **Windows 10/11**, **macOS**, **Linux**, **ChromeOS**, **Android TV**, and **Game Consoles**.
 - **No Background PC Drivers**: Zero server app or host script installation required.
 
+### 🌟 3-Page Animated Onboarding Experience
+- **Interactive First-Launch Guide**: A sleek 3-page welcome flow introducing zero-host HID connectivity, the 75% mechanical input deck, and instant pairing.
+- **Custom Cyber Animations**: Features a real-time animated radar pulse, a glowing 4x3 mechanical deck simulation, and a hollow red breathing logo ring.
+
 ### ⌨️ Full 75% Mechanical Keyboard Layout
 - **Authentic Physical Proportions**: Complete 75% layout with Function Keys row (`F1` - `F12`), `Esc` (Signal Red), `Del`, `Enter` (Signal Red), and dedicated arrow cluster (`▲`, `◄`, `▼`, `►`).
 - **Tactile Spacebar**: Wide light-grey spacebar with bold "SPACE" labeling for effortless thumb typing.
 - **Full Modifier & Hotkey Support**: Native support for `Ctrl`, `Alt`, `Shift`, `Win`, and `Fn` combinations.
 
-### 🔄 Dynamic Orientation & Custom Rotate Controls
-- **One-Tap Orientation Switcher**: Integrated custom rotation control button in the header bar to seamlessly flip between Portrait and Landscape modes.
-- **Landscape Widescreen Split View**: Left side multi-touch trackpad + Right side 75% mechanical keyboard deck for ergonomic two-handed control.
-
-### 🖱️ Multi-Touch Gesture Trackpad
+### 🖱️ Multi-Touch Gesture Trackpad with Integrated Click Zones
 - **Smooth Cursor Navigation**: Dynamic relative delta pointer tracking with customizable sensitivity (`0.5x` - `2.5x`).
 - **Natural Gestures**:
   - **Single-finger tap**: Left Click
   - **Two-finger tap**: Right Click
   - **Two-finger vertical swipe**: Smooth Vertical Scrolling
-- **Tactile Click Pads**: Dedicated `[ L-CLICK ]` and `[ R-CLICK ]` hardware buttons with dual-trigger haptic vibration pulses.
+- **Integrated Click Zones**: `[ L-CLICK ]` and `[ R-CLICK ]` click zones built directly into the bottom of the trackpad surface with dual-trigger haptic vibration pulses.
+
+### 🔄 Dynamic Orientation & Custom Rotate Controls
+- **One-Tap Orientation Switcher**: Integrated custom rotation control button in the header bar to seamlessly flip between Portrait and Landscape modes.
+- **Landscape Widescreen Split View**: Left side multi-touch trackpad + Right side 75% mechanical keyboard deck for ergonomic two-handed control.
 
 ### ⚡ Overhauled Dual-Executor Bluetooth HID Engine
 - **High-Priority Report Executor**: Dedicated single-thread foreground executor for zero-latency input transmission without UI stutter.
@@ -64,6 +69,7 @@ Unlike traditional remote control apps, **Keywe requires ZERO software, drivers,
 ### ⚙️ Minimalist Tactile Theme & Preferences
 - **Curated Color Themes**: `MONOCHROME DARK`, `MATRIX GREEN`, `CYBER AMBER`, `TACTILE WHITE`.
 - **Haptic Feedback Toggle**: Dual-trigger `LocalHapticFeedback` + native 25ms `Vibrator` pulses with custom track styling.
+- **Direct Privacy Policy Access**: In-app link to official Privacy Policy at [https://www.farjan.me/KeywePrivacyPolicy/](https://www.farjan.me/KeywePrivacyPolicy/).
 
 ---
 
@@ -141,6 +147,13 @@ Unlike traditional remote control apps, **Keywe requires ZERO software, drivers,
 
 ---
 
+## 🔒 Privacy Policy
+
+Keywe respects your privacy and collects **ZERO personal data, keystrokes, or analytics**. Read the full live policy here:  
+👉 **[https://www.farjan.me/KeywePrivacyPolicy/](https://www.farjan.me/KeywePrivacyPolicy/)**
+
+---
+
 ## 👤 Author
 
 **Farjan Ahmmed (Shejan)**  
@@ -156,4 +169,4 @@ Unlike traditional remote control apps, **Keywe requires ZERO software, drivers,
 
 ## 📄 License
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+This project is licensed under the GNU General Public License v3.0 — see the [LICENSE](LICENSE) file for details.
