@@ -84,7 +84,11 @@ class MainActivity : ComponentActivity() {
 
         hidManager = BluetoothHidManager(this)
 
-        checkAndRequestPermissions()
+        val initialPrefs = getSharedPreferences("keywe_prefs", Context.MODE_PRIVATE)
+        val onboardingAlreadyShown = initialPrefs.getBoolean("onboarding_shown", false)
+        if (onboardingAlreadyShown) {
+            checkAndRequestPermissions()
+        }
 
         setContent {
             KeyweTheme {
@@ -129,6 +133,7 @@ class MainActivity : ComponentActivity() {
                             onFinish = {
                                 prefs.edit().putBoolean("onboarding_shown", true).apply()
                                 showOnboarding = false
+                                checkAndRequestPermissions()
                             },
                             accentColor = currentTheme.accentColor
                         )
