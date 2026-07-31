@@ -258,9 +258,14 @@ class BluetoothHidManager(private val context: Context) {
                 }
             } else {
                 isAppRegistered = false
-                _connectionStatus.value = ConnectionStatus.ERROR
-                _lastError.value = "HID SDP Registration Failed"
-                Log.e(tag, "HID app registration failed")
+                if (bluetoothAdapter?.isEnabled == true) {
+                    _connectionStatus.value = ConnectionStatus.REGISTERED
+                    _lastError.value = null
+                } else {
+                    _connectionStatus.value = ConnectionStatus.ERROR
+                    _lastError.value = "HID SDP Registration Failed"
+                }
+                Log.d(tag, "HID app un-registered")
             }
         }
 
@@ -377,9 +382,12 @@ class BluetoothHidManager(private val context: Context) {
             _lastError.value = "Bluetooth is turned off"
             return
         }
+        _lastError.value = null
         registerDiscoveryReceiver()
         registerBondReceiver()
-        _connectionStatus.value = ConnectionStatus.REGISTERING
+        if (_connectionStatus.value == ConnectionStatus.ERROR) {
+            _connectionStatus.value = ConnectionStatus.REGISTERING
+        }
         checkBluetoothCapabilities()
     }
 
