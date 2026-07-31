@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
@@ -39,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -84,12 +84,6 @@ class MainActivity : ComponentActivity() {
 
         hidManager = BluetoothHidManager(this)
 
-        val initialPrefs = getSharedPreferences("keywe_prefs", Context.MODE_PRIVATE)
-        val onboardingAlreadyShown = initialPrefs.getBoolean("onboarding_shown", false)
-        if (onboardingAlreadyShown) {
-            checkAndRequestPermissions()
-        }
-
         setContent {
             KeyweTheme {
                 val connectionStatus by hidManager.connectionStatus.collectAsState()
@@ -103,7 +97,7 @@ class MainActivity : ComponentActivity() {
                 val configuration = LocalConfiguration.current
                 val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
-                val prefs = remember { context.getSharedPreferences("keywe_prefs", Context.MODE_PRIVATE) }
+                val prefs = remember { context.getSharedPreferences("keywe_prefs", MODE_PRIVATE) }
 
                 var currentMode by remember { mutableStateOf(ControlMode.SPLIT) }
                 var selectedKeyboardType by remember { mutableStateOf(KeyboardType.TACTILE) }
@@ -131,7 +125,7 @@ class MainActivity : ComponentActivity() {
                     ) {
                         OnboardingScreen(
                             onFinish = {
-                                prefs.edit().putBoolean("onboarding_shown", true).apply()
+                                prefs.edit { putBoolean("onboarding_shown", true) }
                                 showOnboarding = false
                                 checkAndRequestPermissions()
                             },
@@ -440,18 +434,18 @@ class MainActivity : ComponentActivity() {
 
                     // Settings Dialog Modal (Theme, Preferences/Modify, About)
                     if (showSettingsDialog) {
-                        com.shejan.keywe.ui.components.SettingsDialog(
+                        SettingsDialog(
                             currentTheme = currentTheme,
                             onSelectTheme = { currentTheme = it },
                             sensitivity = sensitivity,
                             onSensitivityChange = { newSens ->
                                 sensitivity = newSens
-                                prefs.edit().putFloat("touchpad_sensitivity", newSens).apply()
+                                prefs.edit { putFloat("touchpad_sensitivity", newSens) }
                             },
                             hapticsEnabled = hapticsEnabled,
                             onHapticsToggle = { newHaptics ->
                                 hapticsEnabled = newHaptics
-                                prefs.edit().putBoolean("haptics_enabled", newHaptics).apply()
+                                prefs.edit { putBoolean("haptics_enabled", newHaptics) }
                             },
                             onDismiss = { showSettingsDialog = false }
                         )
@@ -482,6 +476,15 @@ class MainActivity : ComponentActivity() {
             permissionLauncher.launch(missing.toTypedArray())
         } else {
             hidManager.start()
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val prefs = getSharedPreferences("keywe_prefs", MODE_PRIVATE)
+        val onboardingShown = prefs.getBoolean("onboarding_shown", false)
+        if (onboardingShown) {
+            checkAndRequestPermissions()
         }
     }
 

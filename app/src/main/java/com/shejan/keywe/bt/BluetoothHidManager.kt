@@ -244,8 +244,8 @@ class BluetoothHidManager(private val context: Context) {
             if (registered) {
                 _lastError.value = null
                 val active = try {
-                    hidDevice?.connectedDevices?.firstOrNull() ?: pluggedDevice
-                } catch (e: Exception) { pluggedDevice }
+                    hidDevice?.connectedDevices?.firstOrNull()
+                } catch (e: Exception) { null }
 
                 if (active != null) {
                     connectedDevice = active
