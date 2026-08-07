@@ -22,12 +22,19 @@ import androidx.compose.ui.unit.sp
 import com.shejan.keywe.bt.HidReportDescriptor
 import com.shejan.keywe.ui.theme.*
 import kotlin.math.roundToInt
+import kotlin.math.sqrt
 
+// =========================================================================
+// Tap state tracker — lives across recompositions via remember{}
+// =========================================================================
 private class TouchState {
     var lastX: Float = 0f
     var lastY: Float = 0f
+    var downX: Float = 0f          // finger-down X (for true displacement check)
+    var downY: Float = 0f          // finger-down Y
     var touchDownTime: Long = 0L
     var isDragging: Boolean = false
+    var peakPointerCount: Int = 0  // max fingers seen during this touch sequence
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -93,59 +100,112 @@ fun TouchpadSurface(
                         val pointerCount = event.pointerCount
 
                         when (event.actionMasked) {
-                            MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
+
+                            // ── Finger(s) touch down ───────────────────────
+                            MotionEvent.ACTION_DOWN -> {
+                                // Fresh touch sequence — reset everything
                                 state.lastX = event.x
                                 state.lastY = event.y
+                                state.downX = event.x
+                                state.downY = event.y
                                 state.touchDownTime = System.currentTimeMillis()
                                 state.isDragging = false
+                                state.peakPointerCount = 1
                             }
 
+                            MotionEvent.ACTION_POINTER_DOWN -> {
+                                // Additional finger added — update peak count
+                                state.lastX = event.x
+                                state.lastY = event.y
+                                if (pointerCount > state.peakPointerCount) {
+                                    state.peakPointerCount = pointerCount
+                                }
+                                // Adding a second finger resets drag tracking so a
+                                // quick 2-finger tap is not wrongly marked as a drag
+                                state.isDragging = false
+                                state.downX = event.x
+                                state.downY = event.y
+                                state.touchDownTime = System.currentTimeMillis()
+                            }
+
+                            // ── Finger movement ────────────────────────────
                             MotionEvent.ACTION_MOVE -> {
                                 val deltaX = event.x - state.lastX
                                 val deltaY = event.y - state.lastY
 
-                                val dxRaw = deltaX * sensitivity
-                                val dyRaw = deltaY * sensitivity
-
-                                if (kotlin.math.abs(deltaX) > 0.5f || kotlin.math.abs(deltaY) > 0.5f) {
+                                // Mark as dragging only when total displacement from
+                                // finger-down position exceeds 8px (Euclidean distance).
+                                // This prevents micro-jitter from blocking tap recognition.
+                                val totalDx = event.x - state.downX
+                                val totalDy = event.y - state.downY
+                                val totalDisplacement = sqrt(totalDx * totalDx + totalDy * totalDy)
+                                if (totalDisplacement > 8f) {
                                     state.isDragging = true
                                 }
 
                                 state.lastX = event.x
                                 state.lastY = event.y
 
-                                if (pointerCount == 1) {
-                                    // Cursor Movement
-                                    val dxByte = dxRaw.coerceIn(-127f, 127f).roundToInt().toByte()
-                                    val dyByte = dyRaw.coerceIn(-127f, 127f).roundToInt().toByte()
-                                    if (dxByte != 0.toByte() || dyByte != 0.toByte()) {
-                                        onMouseInput(0, dxByte, dyByte, 0)
-                                    }
-                                } else if (pointerCount == 2) {
-                                    // Two-Finger Vertical Scroll
-                                    val wheelByte = (-dyRaw).coerceIn(-127f, 127f).roundToInt().toByte()
-                                    if (wheelByte != 0.toByte()) {
-                                        onMouseInput(0, 0, 0, wheelByte)
+                                if (state.isDragging) {
+                                    val dxRaw = deltaX * sensitivity
+                                    val dyRaw = deltaY * sensitivity
+
+                                    if (pointerCount == 1) {
+                                        // Single finger → cursor movement
+                                        val dxByte = dxRaw.coerceIn(-127f, 127f).roundToInt().toByte()
+                                        val dyByte = dyRaw.coerceIn(-127f, 127f).roundToInt().toByte()
+                                        if (dxByte != 0.toByte() || dyByte != 0.toByte()) {
+                                            onMouseInput(0, dxByte, dyByte, 0)
+                                        }
+                                    } else if (pointerCount == 2) {
+                                        // Two fingers → vertical scroll
+                                        val wheelByte = (-dyRaw).coerceIn(-127f, 127f).roundToInt().toByte()
+                                        if (wheelByte != 0.toByte()) {
+                                            onMouseInput(0, 0, 0, wheelByte)
+                                        }
                                     }
                                 }
                             }
 
-                            MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP -> {
+                            // ── Finger(s) lift off ─────────────────────────
+                            MotionEvent.ACTION_POINTER_UP -> {
+                                // Intermediate finger lifted — just update position.
+                                // Tap resolution always happens on the FINAL ACTION_UP.
+                                state.lastX = event.x
+                                state.lastY = event.y
+                            }
+
+                            MotionEvent.ACTION_UP -> {
+                                // Final finger has left the surface.
                                 val duration = System.currentTimeMillis() - state.touchDownTime
 
-                                // Tap Detection (< 200ms without dragging)
-                                if (!state.isDragging && duration < 200) {
+                                // Tap window: 350ms max, no drag movement detected.
+                                // peakPointerCount records how many fingers were on
+                                // the surface at peak — regardless of lift order.
+                                if (!state.isDragging && duration < 350L) {
                                     triggerHapticPulse()
-                                    if (pointerCount == 1) {
-                                        // Single Finger Tap -> Left Click
-                                        onMouseInput(HidReportDescriptor.MOUSE_BUTTON_LEFT, 0, 0, 0)
-                                        onMouseInput(0, 0, 0, 0) // Release
-                                    } else if (pointerCount == 2) {
-                                        // Two Finger Tap -> Right Click
-                                        onMouseInput(HidReportDescriptor.MOUSE_BUTTON_RIGHT, 0, 0, 0)
-                                        onMouseInput(0, 0, 0, 0) // Release
+                                    when (state.peakPointerCount) {
+                                        1 -> {
+                                            // Single-finger tap → Left Click
+                                            onMouseInput(HidReportDescriptor.MOUSE_BUTTON_LEFT, 0, 0, 0)
+                                            onMouseInput(0, 0, 0, 0) // Button release
+                                        }
+                                        2 -> {
+                                            // Two-finger tap → Right Click
+                                            onMouseInput(HidReportDescriptor.MOUSE_BUTTON_RIGHT, 0, 0, 0)
+                                            onMouseInput(0, 0, 0, 0) // Button release
+                                        }
                                     }
                                 }
+
+                                // Reset for next touch sequence
+                                state.isDragging = false
+                                state.peakPointerCount = 0
+                            }
+
+                            MotionEvent.ACTION_CANCEL -> {
+                                state.isDragging = false
+                                state.peakPointerCount = 0
                             }
                         }
                         true
