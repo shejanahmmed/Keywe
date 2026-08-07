@@ -1,5 +1,8 @@
 package com.shejan.keywe.ui.keyboard
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
@@ -91,6 +95,10 @@ fun SystemKeyboardSurface(
 ) {
     var tfValue by remember { mutableStateOf(TextFieldValue("")) }
     val focusRequester = remember { FocusRequester() }
+    val context = LocalContext.current
+    val clipboardManager = remember(context) {
+        context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+    }
 
     fun sendKeyPress(modifiers: Byte, keycode: Byte) {
         onSendKey(modifiers, keycode)
@@ -295,6 +303,49 @@ fun SystemKeyboardSurface(
                 },
                 modifier = Modifier.width(105.dp),
                 accentColor = SignalRed
+            )
+        }
+
+        // Clipboard Copy & Paste to PC Action Row
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            TactileButton(
+                text = "COPY (CTRL+C)",
+                onClick = {
+                    sendKeyPress(HidReportDescriptor.MODIFIER_LEFT_CTRL, 0x06.toByte())
+                    if (tfValue.text.isNotEmpty()) {
+                        val clip = ClipData.newPlainText("Keywe Text", tfValue.text)
+                        clipboardManager?.setPrimaryClip(clip)
+                    }
+                },
+                modifier = Modifier.weight(1f)
+            )
+            TactileButton(
+                text = "PASTE TO PC",
+                onClick = {
+                    val clipData = clipboardManager?.primaryClip
+                    val clipText = if (clipData != null && clipData.itemCount > 0) {
+                        clipData.getItemAt(0).text?.toString()
+                    } else null
+
+                    if (!clipText.isNullOrEmpty()) {
+                        val updated = tfValue.text + clipText
+                        tfValue = TextFieldValue(text = updated, selection = TextRange(updated.length))
+                        for (ch in clipText) {
+                            val hidKey = KeycodeConverter.charToHidKey(ch)
+                            if (hidKey != null) {
+                                sendKeyPress(hidKey.first, hidKey.second)
+                            }
+                        }
+                    } else {
+                        // Fallback: Send Ctrl+V directly to PC
+                        sendKeyPress(HidReportDescriptor.MODIFIER_LEFT_CTRL, 0x19.toByte())
+                    }
+                },
+                modifier = Modifier.weight(1f),
+                accentColor = MatrixGreen
             )
         }
     }
