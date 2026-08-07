@@ -360,10 +360,12 @@ class BluetoothHidManager(private val context: Context) {
                         intArrayOf(BluetoothProfile.STATE_CONNECTED)
                     )?.firstOrNull()
                     if (trulyConnected != null) {
+                        // Already connected — update state without touching HID registration
                         connectedDevice = trulyConnected
                         _connectedDeviceName.value = trulyConnected.name ?: trulyConnected.address
                         _connectionStatus.value = ConnectionStatus.CONNECTED
                         _lastError.value = null
+                        Log.d(tag, "checkBluetoothCapabilities: already connected to ${trulyConnected.name} — skipping re-registration")
                     } else {
                         connectedDevice = null
                         _connectedDeviceName.value = null
@@ -385,6 +387,24 @@ class BluetoothHidManager(private val context: Context) {
         _lastError.value = null
         registerDiscoveryReceiver()
         registerBondReceiver()
+
+        // If already registered and connected, do NOT re-register — this causes the
+        // Android Bluetooth stack to briefly drop the HID profile and triggers the
+        // system "Can't connect to [device]" Toast notification on the host PC.
+        val hid = hidDevice
+        if (hid != null && isAppRegistered) {
+            val trulyConnected = try {
+                hid.getDevicesMatchingConnectionStates(intArrayOf(BluetoothProfile.STATE_CONNECTED))?.firstOrNull()
+            } catch (_: Exception) { null }
+            if (trulyConnected != null) {
+                connectedDevice = trulyConnected
+                _connectedDeviceName.value = trulyConnected.name ?: trulyConnected.address
+                _connectionStatus.value = ConnectionStatus.CONNECTED
+                Log.d(tag, "start(): already connected to ${trulyConnected.name} — skipping re-registration")
+                return
+            }
+        }
+
         if (_connectionStatus.value == ConnectionStatus.ERROR) {
             _connectionStatus.value = ConnectionStatus.REGISTERING
         }
@@ -415,6 +435,21 @@ class BluetoothHidManager(private val context: Context) {
             _lastError.value = "HID Service Proxy Unavailable"
             return
         }
+
+        // Guard: If already registered and a live connection exists, skip the
+        // unregister → re-register cycle entirely. Calling unregisterApp() while
+        // connected causes the OS to momentarily revoke the HID profile, which
+        // triggers a "Can't connect to [device]" system Toast on the host PC.
+        if (isAppRegistered) {
+            val trulyConnected = try {
+                hid.getDevicesMatchingConnectionStates(intArrayOf(BluetoothProfile.STATE_CONNECTED))?.firstOrNull()
+            } catch (_: Exception) { null }
+            if (trulyConnected != null) {
+                Log.d(tag, "registerHidApp(): already registered and connected to ${trulyConnected.name} — skipping")
+                return
+            }
+        }
+
         bgExecutor.execute {
             Log.d(tag, "Registering HID app…")
             try { hid.unregisterApp() } catch (_: Exception) {}
