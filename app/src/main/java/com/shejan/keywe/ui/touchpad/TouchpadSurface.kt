@@ -73,6 +73,8 @@ fun TouchpadSurface(
     }
 
     val state = remember { TouchState() }
+    // Live touch position for visual feedback — Offset.Unspecified when not touching
+    var touchIndicatorPos by remember { mutableStateOf(Offset.Unspecified) }
 
     // Unified Modern Trackpad Deck Module
     Column(
@@ -111,6 +113,7 @@ fun TouchpadSurface(
                                 state.touchDownTime = System.currentTimeMillis()
                                 state.isDragging = false
                                 state.peakPointerCount = 1
+                                touchIndicatorPos = Offset(event.x, event.y)
                             }
 
                             MotionEvent.ACTION_POINTER_DOWN -> {
@@ -126,6 +129,7 @@ fun TouchpadSurface(
                                 state.downX = event.x
                                 state.downY = event.y
                                 state.touchDownTime = System.currentTimeMillis()
+                                touchIndicatorPos = Offset(event.x, event.y)
                             }
 
                             // ── Finger movement ────────────────────────────
@@ -145,6 +149,7 @@ fun TouchpadSurface(
 
                                 state.lastX = event.x
                                 state.lastY = event.y
+                                touchIndicatorPos = Offset(event.x, event.y)
 
                                 if (state.isDragging) {
                                     val dxRaw = deltaX * sensitivity
@@ -158,10 +163,24 @@ fun TouchpadSurface(
                                             onMouseInput(0, dxByte, dyByte, 0)
                                         }
                                     } else if (pointerCount == 2) {
-                                        // Two fingers → vertical scroll
-                                        val wheelByte = (-dyRaw).coerceIn(-127f, 127f).roundToInt().toByte()
-                                        if (wheelByte != 0.toByte()) {
-                                            onMouseInput(0, 0, 0, wheelByte)
+                                        // Two fingers — determine dominant axis:
+                                        // vertical dominance → vertical scroll (wheel)
+                                        // horizontal dominance → horizontal scroll (pan via dx)
+                                        val absDx = kotlin.math.abs(dxRaw)
+                                        val absDy = kotlin.math.abs(dyRaw)
+                                        if (absDy >= absDx) {
+                                            // Vertical scroll
+                                            val wheelByte = (-dyRaw).coerceIn(-127f, 127f).roundToInt().toByte()
+                                            if (wheelByte != 0.toByte()) {
+                                                onMouseInput(0, 0, 0, wheelByte)
+                                            }
+                                        } else {
+                                            // Horizontal scroll — send as cursor X delta
+                                            // (maps to horizontal pan on host)
+                                            val panByte = dxRaw.coerceIn(-127f, 127f).roundToInt().toByte()
+                                            if (panByte != 0.toByte()) {
+                                                onMouseInput(0, panByte, 0, 0)
+                                            }
                                         }
                                     }
                                 }
@@ -201,11 +220,13 @@ fun TouchpadSurface(
                                 // Reset for next touch sequence
                                 state.isDragging = false
                                 state.peakPointerCount = 0
+                                touchIndicatorPos = Offset.Unspecified // hide dot on lift
                             }
 
                             MotionEvent.ACTION_CANCEL -> {
                                 state.isDragging = false
                                 state.peakPointerCount = 0
+                                touchIndicatorPos = Offset.Unspecified
                             }
                         }
                         true
@@ -225,6 +246,28 @@ fun TouchpadSurface(
                                 center = Offset(x.toFloat(), y.toFloat())
                             )
                         }
+                    }
+
+                    // Live touch indicator: glowing dot that follows the finger
+                    if (touchIndicatorPos != Offset.Unspecified) {
+                        // Outer glow ring
+                        drawCircle(
+                            color = MonochromeWhite.copy(alpha = 0.10f),
+                            radius = 28.dp.toPx(),
+                            center = touchIndicatorPos
+                        )
+                        // Mid glow ring
+                        drawCircle(
+                            color = MonochromeWhite.copy(alpha = 0.18f),
+                            radius = 14.dp.toPx(),
+                            center = touchIndicatorPos
+                        )
+                        // Solid core dot
+                        drawCircle(
+                            color = MonochromeWhite.copy(alpha = 0.75f),
+                            radius = 4.dp.toPx(),
+                            center = touchIndicatorPos
+                        )
                     }
                 }
 

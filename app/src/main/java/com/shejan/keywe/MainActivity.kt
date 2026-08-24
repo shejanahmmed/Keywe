@@ -22,7 +22,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -181,9 +183,13 @@ class MainActivity : ComponentActivity() {
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
+                                // Status section — tappable to open Device Manager (#10/#11)
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    modifier = Modifier
+                                        .clickable { showDeviceDialog = true }
+                                        .padding(vertical = 4.dp, horizontal = 2.dp)
                                 ) {
                                     Text(
                                         text = "KEYWE",
@@ -220,6 +226,10 @@ class MainActivity : ComponentActivity() {
                                         accentColor = currentTheme.accentColor,
                                         onClick = { currentMode = ControlMode.KEYBOARD },
                                         onLongClick = { showKeyboardTypeDialog = true }
+                                    )
+                                    TactileButton(
+                                        text = "BT",
+                                        onClick = { showDeviceDialog = true }
                                     )
                                     TactileButton(
                                         iconGraphic = { ScreenRotationGraphic() },
@@ -690,7 +700,13 @@ fun DeviceManagerDialog(
                 .border(1.dp, GraphiteBorder, RoundedCornerShape(12.dp))
                 .padding(16.dp)
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            // Issue #9: wrap content in verticalScroll so the dialog
+            // never clips off-screen on small phones with many paired devices.
+            Column(
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
                 // Dialog Header Title
                 Row(
                     modifier = Modifier.fillMaxWidth(),

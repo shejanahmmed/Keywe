@@ -240,7 +240,14 @@ fun SystemKeyboardSurface(
             )
             TactileButton(
                 text = "CLEAR",
-                onClick = { tfValue = TextFieldValue("", selection = TextRange(0)) },
+                onClick = {
+                    // Send Ctrl+A (select all) then Delete to the PC so the remote
+                    // input field is wiped in sync with the local text box clear.
+                    sendKeyPress(HidReportDescriptor.MODIFIER_LEFT_CTRL, 0x04.toByte()) // Ctrl+A
+                    sendKeyPress(0, 0x2A.toByte()) // Backspace / Delete selection
+                    // Clear the local text box
+                    tfValue = TextFieldValue("", selection = TextRange(0))
+                },
                 modifier = Modifier.weight(1f),
                 accentColor = SignalRed
             )
