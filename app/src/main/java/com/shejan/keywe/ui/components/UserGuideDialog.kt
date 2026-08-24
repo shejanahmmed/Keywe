@@ -97,7 +97,7 @@ fun UserGuideDialog(
                             "1-Finger Drag: Relative precision cursor movement.",
                             "1-Finger Tap: Left Click.",
                             "2-Finger Tap: Right Click.",
-                            "2-Finger Swipe: Smooth vertical scrolling.",
+                            "2-Finger Swipe: Smooth vertical scrolling and horizontal panning.",
                             "Integrated Click Bar: Dedicated [ L-CLICK ] and [ R-CLICK ] zones built into trackpad bottom."
                         )
                     )
@@ -110,8 +110,9 @@ fun UserGuideDialog(
                         accentColor = accentColor,
                         iconGraphic = { KeyboardIconGraphic(tint = accentColor) },
                         bulletPoints = listOf(
-                            "Full 75% Layout: Function row (F1-F12), Esc (Red), Del, Enter, and Arrow cluster.",
-                            "Modifier Locks: Tap Ctrl, Alt, Shift, or Win to send shortcuts (e.g., Ctrl + C / Win + Tab).",
+                            "Full 75% Layout: Function row (F1-F12), Esc (Red), PrtSc, Del, Enter, and Arrow cluster.",
+                            "Modifier Shortcuts: Tap Ctrl or Win to reveal dynamic shortcut labels (e.g., COPY, PASTE, UNDO).",
+                            "One-Shot Shift: Auto-releases after each keystroke for natural typing.",
                             "Mode Switcher: Toggle between TOUCHPAD, TACTILE DECK, and SPLIT VIEW."
                         )
                     )

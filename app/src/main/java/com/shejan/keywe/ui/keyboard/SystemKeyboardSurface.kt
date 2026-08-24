@@ -33,6 +33,8 @@ import com.shejan.keywe.bt.HidReportDescriptor
 import com.shejan.keywe.ui.components.StatusIndicatorDot
 import com.shejan.keywe.ui.components.TactileButton
 import com.shejan.keywe.ui.theme.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 object KeycodeConverter {
     /**
@@ -99,6 +101,12 @@ fun SystemKeyboardSurface(
     val clipboardManager = remember(context) {
         context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
     }
+    val coroutineScope = rememberCoroutineScope()
+
+    // Paste progress state
+    var isPasting by remember { mutableStateOf(false) }
+    var pasteProgress by remember { mutableIntStateOf(0) }
+    var pasteTotalChars by remember { mutableIntStateOf(0) }
 
     fun sendKeyPress(modifiers: Byte, keycode: Byte) {
         onSendKey(modifiers, keycode)
@@ -340,8 +348,12 @@ fun SystemKeyboardSurface(
                 modifier = Modifier.weight(1f)
             )
             TactileButton(
-                text = "PASTE TO PC",
+                // Show live progress while pasting so the user knows it's working.
+                // Disabled during active paste to prevent double-send.
+                text = if (isPasting) "SENDING $pasteProgress/$pasteTotalChars" else "PASTE TO PC",
                 onClick = {
+                    if (isPasting) return@TactileButton // guard against double-tap
+
                     val clipData = clipboardManager?.primaryClip
                     val clipText = if (clipData != null && clipData.itemCount > 0) {
                         clipData.getItemAt(0).text?.toString()
@@ -350,11 +362,21 @@ fun SystemKeyboardSurface(
                     if (!clipText.isNullOrEmpty()) {
                         val updated = tfValue.text + clipText
                         tfValue = TextFieldValue(text = updated, selection = TextRange(updated.length))
-                        for (ch in clipText) {
-                            val hidKey = KeycodeConverter.charToHidKey(ch)
-                            if (hidKey != null) {
-                                sendKeyPress(hidKey.first, hidKey.second)
+                        pasteTotalChars = clipText.length
+                        pasteProgress = 0
+                        isPasting = true
+                        coroutineScope.launch {
+                            for (ch in clipText) {
+                                val hidKey = KeycodeConverter.charToHidKey(ch)
+                                if (hidKey != null) {
+                                    sendKeyPress(hidKey.first, hidKey.second)
+                                }
+                                pasteProgress++
+                                // 8ms per key: avoids overwhelming the BT HID stack
+                                // while keeping paste of 200 chars under 2 seconds.
+                                delay(8L)
                             }
+                            isPasting = false
                         }
                     } else {
                         // Fallback: Send Ctrl+V directly to PC

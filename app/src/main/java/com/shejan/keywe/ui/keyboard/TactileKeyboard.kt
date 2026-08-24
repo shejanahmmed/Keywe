@@ -125,6 +125,17 @@ private val QWERTY_ROW_3 = listOf(
     "m" to KeycodeMap.KEY_M
 )
 
+private val CTRL_SHORTCUTS = mapOf(
+    "c" to "COPY", "v" to "PASTE", "x" to "CUT", "z" to "UNDO",
+    "y" to "REDO", "a" to "ALL", "s" to "SAVE", "f" to "FIND",
+    "w" to "CLOSE", "t" to "TAB"
+)
+
+private val WIN_SHORTCUTS = mapOf(
+    "e" to "FILES", "r" to "RUN", "d" to "DESK", "l" to "LOCK",
+    "v" to "CLIP", "s" to "SRCH"
+)
+
 @Composable
 fun TactileKeyboard(
     onSendKey: (modifiers: Byte, keycode: Byte) -> Unit,
@@ -173,6 +184,14 @@ fun TactileKeyboard(
         if (shiftActive) mods = mods or HidReportDescriptor.MODIFIER_LEFT_SHIFT.toInt()
         if (winActive) mods = mods or HidReportDescriptor.MODIFIER_LEFT_GUI.toInt()
         return mods.toByte()
+    }
+
+    fun getSubLabel(charKey: String): String? {
+        return when {
+            ctrlActive -> CTRL_SHORTCUTS[charKey.lowercase()]
+            winActive -> WIN_SHORTCUTS[charKey.lowercase()]
+            else -> null
+        }
     }
 
     fun pressKey(keycode: Byte) {
@@ -267,7 +286,13 @@ fun TactileKeyboard(
 
             for ((label, code) in QWERTY_ROW_1) {
                 val displayLabel = if (capsActive || shiftActive) label.uppercase() else label
-                KeyCap(label = displayLabel, height = keyHeight, fontSize = 10.5.sp, modifier = Modifier.weight(1f)) { pressKey(code) }
+                KeyCap(
+                    label = displayLabel,
+                    subLabel = getSubLabel(label),
+                    height = keyHeight,
+                    fontSize = 10.5.sp,
+                    modifier = Modifier.weight(1f)
+                ) { pressKey(code) }
             }
 
             KeyCap(label = "[", height = keyHeight, fontSize = 10.sp, modifier = Modifier.weight(1f)) { pressKey(KeycodeMap.KEY_LEFTBRACE) }
@@ -295,7 +320,13 @@ fun TactileKeyboard(
 
             for ((label, code) in QWERTY_ROW_2) {
                 val displayLabel = if (capsActive || shiftActive) label.uppercase() else label
-                KeyCap(label = displayLabel, height = keyHeight, fontSize = 10.5.sp, modifier = Modifier.weight(1f)) { pressKey(code) }
+                KeyCap(
+                    label = displayLabel,
+                    subLabel = getSubLabel(label),
+                    height = keyHeight,
+                    fontSize = 10.5.sp,
+                    modifier = Modifier.weight(1f)
+                ) { pressKey(code) }
             }
 
             KeyCap(label = ";", height = keyHeight, fontSize = 10.sp, modifier = Modifier.weight(1f)) { pressKey(KeycodeMap.KEY_SEMICOLON) }
@@ -327,7 +358,13 @@ fun TactileKeyboard(
 
             for ((label, code) in QWERTY_ROW_3) {
                 val displayLabel = if (capsActive || shiftActive) label.uppercase() else label
-                KeyCap(label = displayLabel, height = keyHeight, fontSize = 10.5.sp, modifier = Modifier.weight(1f)) { pressKey(code) }
+                KeyCap(
+                    label = displayLabel,
+                    subLabel = getSubLabel(label),
+                    height = keyHeight,
+                    fontSize = 10.5.sp,
+                    modifier = Modifier.weight(1f)
+                ) { pressKey(code) }
             }
 
             KeyCap(label = ",", height = keyHeight, fontSize = 10.sp, modifier = Modifier.weight(1f)) { pressKey(KeycodeMap.KEY_COMMA) }
@@ -465,6 +502,7 @@ fun KeyCap(
     modifier: Modifier = Modifier,
     height: Dp = 38.dp,
     fontSize: androidx.compose.ui.unit.TextUnit = 10.sp,
+    subLabel: String? = null,
     active: Boolean = false,
     activeColor: Color = SignalRed,
     customBg: Color? = null,
@@ -492,16 +530,44 @@ fun KeyCap(
             .padding(horizontal = 1.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = label,
-            style = DotMatrixTypography.labelSmall.copy(
-                fontWeight = FontWeight.Bold,
-                fontSize = fontSize
-            ),
-            color = textColor,
-            maxLines = 1,
-            softWrap = false,
-            overflow = TextOverflow.Ellipsis
-        )
+        if (subLabel != null) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = label,
+                    style = DotMatrixTypography.labelSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = (fontSize.value * 0.85f).sp
+                    ),
+                    color = textColor,
+                    maxLines = 1,
+                    softWrap = false
+                )
+                Text(
+                    text = subLabel,
+                    style = DotMatrixTypography.labelSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 6.5.sp
+                    ),
+                    color = activeColor,
+                    maxLines = 1,
+                    softWrap = false
+                )
+            }
+        } else {
+            Text(
+                text = label,
+                style = DotMatrixTypography.labelSmall.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = fontSize
+                ),
+                color = textColor,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
     }
 }
