@@ -179,7 +179,10 @@ fun TactileKeyboard(
         triggerHapticPulse()
         val mods = currentModifiers()
         onSendKey(mods, keycode)
-        onSendKey(mods, 0)
+        onSendKey(0, 0) // Release: clear all keys AND modifiers simultaneously (correct HID behavior)
+        // One-shot Shift: auto-reset after each character key press, just like a physical keyboard.
+        // This prevents accidental ALL-CAPS typing when the user forgets to toggle Shift off.
+        if (shiftActive) shiftActive = false
     }
 
     Column(
@@ -408,12 +411,12 @@ fun TactileKeyboard(
             ) { altActive = !altActive }
 
             KeyCap(
-                label = "Fn",
+                label = "PrtSc",
                 height = keyHeight,
-                fontSize = 9.sp,
+                fontSize = 8.5.sp,
                 customBg = CharcoalDark,
                 modifier = Modifier.weight(1f)
-            ) {}
+            ) { pressKey(0x46.toByte()) } // HID Usage ID 0x46 = PrintScreen
 
             KeyCap(
                 label = "Ctrl",

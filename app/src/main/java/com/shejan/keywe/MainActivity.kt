@@ -100,8 +100,26 @@ class MainActivity : ComponentActivity() {
                 val prefs = remember { context.getSharedPreferences("keywe_prefs", MODE_PRIVATE) }
 
                 var currentMode by remember { mutableStateOf(ControlMode.SPLIT) }
-                var selectedKeyboardType by remember { mutableStateOf(KeyboardType.TACTILE) }
-                var currentTheme by remember { mutableStateOf(AppThemePreset.MONOCHROME_DARK) }
+                var selectedKeyboardType by remember {
+                    mutableStateOf(
+                        when (prefs.getString("keyboard_type", KeyboardType.TACTILE.name)) {
+                            KeyboardType.SYSTEM.name -> KeyboardType.SYSTEM
+                            else -> KeyboardType.TACTILE
+                        }
+                    )
+                }
+                var currentTheme by remember {
+                    mutableStateOf(
+                        try {
+                            AppThemePreset.valueOf(
+                                prefs.getString("app_theme", AppThemePreset.MONOCHROME_DARK.name)
+                                    ?: AppThemePreset.MONOCHROME_DARK.name
+                            )
+                        } catch (_: Exception) {
+                            AppThemePreset.MONOCHROME_DARK
+                        }
+                    )
+                }
                 var sensitivity by remember { mutableFloatStateOf(prefs.getFloat("touchpad_sensitivity", 1.2f)) }
                 var hapticsEnabled by remember { mutableStateOf(prefs.getBoolean("haptics_enabled", true)) }
                 var showDeviceDialog by remember { mutableStateOf(false) }
@@ -427,7 +445,10 @@ class MainActivity : ComponentActivity() {
                     if (showKeyboardTypeDialog) {
                         KeyboardTypeSelectorDialog(
                             selectedType = selectedKeyboardType,
-                            onSelectType = { selectedKeyboardType = it },
+                            onSelectType = { type ->
+                                selectedKeyboardType = type
+                                prefs.edit { putString("keyboard_type", type.name) }
+                            },
                             onDismiss = { showKeyboardTypeDialog = false }
                         )
                     }
@@ -436,7 +457,10 @@ class MainActivity : ComponentActivity() {
                     if (showSettingsDialog) {
                         SettingsDialog(
                             currentTheme = currentTheme,
-                            onSelectTheme = { currentTheme = it },
+                            onSelectTheme = { selectedTheme ->
+                                currentTheme = selectedTheme
+                                prefs.edit { putString("app_theme", selectedTheme.name) }
+                            },
                             sensitivity = sensitivity,
                             onSensitivityChange = { newSens ->
                                 sensitivity = newSens
@@ -475,6 +499,8 @@ class MainActivity : ComponentActivity() {
         if (missing.isNotEmpty()) {
             permissionLauncher.launch(missing.toTypedArray())
         } else {
+            // All permissions already granted — start HID service directly.
+            // hidManager.start() is idempotent: it safely no-ops if already connected.
             hidManager.start()
         }
     }
@@ -484,7 +510,29 @@ class MainActivity : ComponentActivity() {
         val prefs = getSharedPreferences("keywe_prefs", MODE_PRIVATE)
         val onboardingShown = prefs.getBoolean("onboarding_shown", false)
         if (onboardingShown) {
-            checkAndRequestPermissions()
+            // Bug 7 fix: skip the permission launcher if all permissions are already granted.
+            // This avoids unnecessary system permission API calls on every app foreground event.
+            val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                listOf(
+                    Manifest.permission.BLUETOOTH_CONNECT,
+                    Manifest.permission.BLUETOOTH_ADVERTISE,
+                    Manifest.permission.BLUETOOTH_SCAN
+                )
+            } else {
+                listOf(
+                    Manifest.permission.BLUETOOTH,
+                    Manifest.permission.BLUETOOTH_ADMIN,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                )
+            }
+            val allGranted = permissions.all {
+                ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
+            }
+            if (allGranted) {
+                hidManager.start()
+            } else {
+                checkAndRequestPermissions()
+            }
         }
     }
 

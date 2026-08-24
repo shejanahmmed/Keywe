@@ -274,14 +274,14 @@ fun SystemKeyboardSurface(
                             .background(CharcoalDark)
                             .border(1.dp, GraphiteBorder, RoundedCornerShape(4.dp))
                             .clickable {
+                                // Append emoji to the local text box only.
+                                // Standard Bluetooth HID has no Unicode transport — emojis cannot
+                                // be transmitted as HID keycodes and are silently dropped if attempted.
+                                // The user should type text with emojis here and use "PASTE TO PC"
+                                // if their PC OS supports Unicode paste (Windows: Win+. emoji picker
+                                // is a better alternative for actual PC emoji input).
                                 val updated = tfValue.text + emoji
                                 tfValue = TextFieldValue(text = updated, selection = TextRange(updated.length))
-                                for (ch in emoji) {
-                                    val hidKey = KeycodeConverter.charToHidKey(ch)
-                                    if (hidKey != null) {
-                                        sendKeyPress(hidKey.first, hidKey.second)
-                                    }
-                                }
                             },
                         contentAlignment = Alignment.Center
                     ) {
@@ -305,6 +305,16 @@ fun SystemKeyboardSurface(
                 accentColor = SignalRed
             )
         }
+
+        // Emoji notice: standard Bluetooth HID cannot transmit Unicode/emoji codepoints.
+        // Emojis tapped above are added to the local text box only.
+        Text(
+            text = "⚠ Emojis are stored in the text box only — Bluetooth HID cannot transmit Unicode to PC",
+            style = DotMatrixTypography.labelSmall.copy(fontSize = 8.5.sp),
+            color = MonochromeMuted,
+            modifier = Modifier.fillMaxWidth()
+        )
+
 
         // Clipboard Copy & Paste to PC Action Row
         Row(
