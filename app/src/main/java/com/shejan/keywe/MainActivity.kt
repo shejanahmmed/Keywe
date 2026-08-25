@@ -175,7 +175,6 @@ class MainActivity : ComponentActivity() {
                         }
 
                         if (isLandscape) {
-                            // Ultra-Compact Landscape Top Bar
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -183,7 +182,6 @@ class MainActivity : ComponentActivity() {
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                // Status section — tappable to open Device Manager (#10/#11)
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -509,8 +507,6 @@ class MainActivity : ComponentActivity() {
         if (missing.isNotEmpty()) {
             permissionLauncher.launch(missing.toTypedArray())
         } else {
-            // All permissions already granted — start HID service directly.
-            // hidManager.start() is idempotent: it safely no-ops if already connected.
             hidManager.start()
         }
     }
@@ -520,8 +516,6 @@ class MainActivity : ComponentActivity() {
         val prefs = getSharedPreferences("keywe_prefs", MODE_PRIVATE)
         val onboardingShown = prefs.getBoolean("onboarding_shown", false)
         if (onboardingShown) {
-            // Bug 7 fix: skip the permission launcher if all permissions are already granted.
-            // This avoids unnecessary system permission API calls on every app foreground event.
             val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 listOf(
                     Manifest.permission.BLUETOOTH_CONNECT,
@@ -700,8 +694,6 @@ fun DeviceManagerDialog(
                 .border(1.dp, GraphiteBorder, RoundedCornerShape(12.dp))
                 .padding(16.dp)
         ) {
-            // Issue #9: wrap content in verticalScroll so the dialog
-            // never clips off-screen on small phones with many paired devices.
             Column(
                 modifier = Modifier
                     .verticalScroll(rememberScrollState()),

@@ -178,7 +178,6 @@ private fun GuideCard(
             .padding(14.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            // 1. Top STEP Badge Box
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(4.dp))
@@ -195,13 +194,11 @@ private fun GuideCard(
                 )
             }
 
-            // 2. Section Header Row (Icon + Title Side-by-Side)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Icon Graphic Box
                 Box(
                     modifier = Modifier
                         .size(28.dp)
@@ -213,7 +210,6 @@ private fun GuideCard(
                     iconGraphic()
                 }
 
-                // Section Title Text
                 Text(
                     text = title,
                     style = DotMatrixTypography.titleMedium.copy(fontSize = 13.5.sp, fontWeight = FontWeight.Bold),
@@ -221,7 +217,6 @@ private fun GuideCard(
                 )
             }
 
-            // 3. Subtitle Row
             Text(
                 text = subtitle.uppercase(),
                 style = DotMatrixTypography.labelSmall.copy(fontSize = 9.5.sp),
@@ -235,7 +230,6 @@ private fun GuideCard(
                     .background(GraphiteSubtle)
             )
 
-            // Bullet Points List
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 bulletPoints.forEach { point ->
                     Row(

@@ -249,11 +249,8 @@ fun SystemKeyboardSurface(
             TactileButton(
                 text = "CLEAR",
                 onClick = {
-                    // Send Ctrl+A (select all) then Delete to the PC so the remote
-                    // input field is wiped in sync with the local text box clear.
-                    sendKeyPress(HidReportDescriptor.MODIFIER_LEFT_CTRL, 0x04.toByte()) // Ctrl+A
-                    sendKeyPress(0, 0x2A.toByte()) // Backspace / Delete selection
-                    // Clear the local text box
+                    sendKeyPress(HidReportDescriptor.MODIFIER_LEFT_CTRL, 0x04.toByte())
+                    sendKeyPress(0, 0x2A.toByte())
                     tfValue = TextFieldValue("", selection = TextRange(0))
                 },
                 modifier = Modifier.weight(1f),
@@ -289,12 +286,6 @@ fun SystemKeyboardSurface(
                             .background(CharcoalDark)
                             .border(1.dp, GraphiteBorder, RoundedCornerShape(4.dp))
                             .clickable {
-                                // Append emoji to the local text box only.
-                                // Standard Bluetooth HID has no Unicode transport — emojis cannot
-                                // be transmitted as HID keycodes and are silently dropped if attempted.
-                                // The user should type text with emojis here and use "PASTE TO PC"
-                                // if their PC OS supports Unicode paste (Windows: Win+. emoji picker
-                                // is a better alternative for actual PC emoji input).
                                 val updated = tfValue.text + emoji
                                 tfValue = TextFieldValue(text = updated, selection = TextRange(updated.length))
                             },
@@ -321,10 +312,8 @@ fun SystemKeyboardSurface(
             )
         }
 
-        // Emoji notice: standard Bluetooth HID cannot transmit Unicode/emoji codepoints.
-        // Emojis tapped above are added to the local text box only.
         Text(
-            text = "⚠ Emojis are stored in the text box only — Bluetooth HID cannot transmit Unicode to PC",
+            text = "Emojis are stored in the text box only — Bluetooth HID transmits standard keystrokes",
             style = DotMatrixTypography.labelSmall.copy(fontSize = 8.5.sp),
             color = MonochromeMuted,
             modifier = Modifier.fillMaxWidth()
@@ -348,11 +337,9 @@ fun SystemKeyboardSurface(
                 modifier = Modifier.weight(1f)
             )
             TactileButton(
-                // Show live progress while pasting so the user knows it's working.
-                // Disabled during active paste to prevent double-send.
                 text = if (isPasting) "SENDING $pasteProgress/$pasteTotalChars" else "PASTE TO PC",
                 onClick = {
-                    if (isPasting) return@TactileButton // guard against double-tap
+                    if (isPasting) return@TactileButton
 
                     val clipData = clipboardManager?.primaryClip
                     val clipText = if (clipData != null && clipData.itemCount > 0) {
@@ -372,14 +359,11 @@ fun SystemKeyboardSurface(
                                     sendKeyPress(hidKey.first, hidKey.second)
                                 }
                                 pasteProgress++
-                                // 8ms per key: avoids overwhelming the BT HID stack
-                                // while keeping paste of 200 chars under 2 seconds.
                                 delay(8L)
                             }
                             isPasting = false
                         }
                     } else {
-                        // Fallback: Send Ctrl+V directly to PC
                         sendKeyPress(HidReportDescriptor.MODIFIER_LEFT_CTRL, 0x19.toByte())
                     }
                 },

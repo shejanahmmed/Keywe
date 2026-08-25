@@ -83,7 +83,7 @@ class BluetoothHidManager(private val context: Context) {
         }, "keywe-bt-reports")
     }
 
-    // --- SDP Settings ---
+    // SDP Settings
     private val sdpSettings = BluetoothHidDeviceAppSdpSettings(
         "Keywe Controller",
         "Tactile Keyboard & Mouse",
@@ -91,10 +91,6 @@ class BluetoothHidManager(private val context: Context) {
         BluetoothHidDevice.SUBCLASS1_KEYBOARD,
         HidReportDescriptor.COMBO_DESCRIPTOR
     )
-
-    // =========================================================================
-    // RECEIVERS
-    // =========================================================================
 
     private val discoveryReceiver = object : BroadcastReceiver() {
         override fun onReceive(ctx: Context?, intent: Intent?) {
@@ -188,10 +184,6 @@ class BluetoothHidManager(private val context: Context) {
         }
     }
 
-    // =========================================================================
-    // PROFILE SERVICE LISTENER
-    // =========================================================================
-
     private val serviceListener = object : BluetoothProfile.ServiceListener {
         override fun onServiceConnected(profile: Int, proxy: BluetoothProfile) {
             if (profile != BluetoothProfile.HID_DEVICE) return
@@ -232,10 +224,6 @@ class BluetoothHidManager(private val context: Context) {
             isAppRegistered = false
         }
     }
-
-    // =========================================================================
-    // HID DEVICE CALLBACK
-    // =========================================================================
 
     private val hidCallback = object : BluetoothHidDevice.Callback() {
         override fun onAppStatusChanged(pluggedDevice: BluetoothDevice?, registered: Boolean) {
@@ -319,10 +307,6 @@ class BluetoothHidManager(private val context: Context) {
             _connectionStatus.value = ConnectionStatus.REGISTERED
         }
     }
-
-    // =========================================================================
-    // CORE CONNECTION ENGINE
-    // =========================================================================
 
     fun checkBluetoothCapabilities() {
         val adapter = bluetoothAdapter
@@ -485,10 +469,6 @@ class BluetoothHidManager(private val context: Context) {
         }
     }
 
-    // =========================================================================
-    // SCANNING
-    // =========================================================================
-
     fun startScanning() {
         val adapter = bluetoothAdapter ?: return
         if (!adapter.isEnabled) return
@@ -510,10 +490,6 @@ class BluetoothHidManager(private val context: Context) {
         } catch (e: Exception) { Log.w(tag, "stopScanning error: ${e.message}") }
         _isScanning.value = false
     }
-
-    // =========================================================================
-    // PAIRING & CONNECTING
-    // =========================================================================
 
     fun connectDevice(device: BluetoothDevice): Boolean {
         val hid = hidDevice ?: run {
@@ -595,10 +571,6 @@ class BluetoothHidManager(private val context: Context) {
         _connectionStatus.value = ConnectionStatus.REGISTERED
     }
 
-    // =========================================================================
-    // HID REPORT SENDERS
-    // =========================================================================
-
     fun sendMouseInput(buttons: Byte, dx: Byte, dy: Byte, wheel: Byte = 0) {
         val device = connectedDevice ?: return
         val hid = hidDevice ?: return
@@ -619,10 +591,6 @@ class BluetoothHidManager(private val context: Context) {
         }
     }
 
-    // =========================================================================
-    // LIFECYCLE & CLEANUP
-    // =========================================================================
-
     fun stop() {
         connectionTimeoutFuture?.cancel(false)
         stopScanning()
@@ -641,10 +609,6 @@ class BluetoothHidManager(private val context: Context) {
         return try { bluetoothAdapter?.bondedDevices?.toList() ?: emptyList() }
         catch (e: Exception) { emptyList() }
     }
-
-    // =========================================================================
-    // RECEIVER HELPERS
-    // =========================================================================
 
     private fun registerDiscoveryReceiver() {
         if (isDiscoveryReceiverRegistered) return

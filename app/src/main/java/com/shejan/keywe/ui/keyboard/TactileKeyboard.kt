@@ -198,9 +198,7 @@ fun TactileKeyboard(
         triggerHapticPulse()
         val mods = currentModifiers()
         onSendKey(mods, keycode)
-        onSendKey(0, 0) // Release: clear all keys AND modifiers simultaneously (correct HID behavior)
-        // One-shot Shift: auto-reset after each character key press, just like a physical keyboard.
-        // This prevents accidental ALL-CAPS typing when the user forgets to toggle Shift off.
+        onSendKey(0, 0)
         if (shiftActive) shiftActive = false
     }
 
@@ -213,7 +211,7 @@ fun TactileKeyboard(
             .padding(4.dp),
         verticalArrangement = Arrangement.spacedBy(3.dp)
     ) {
-        // Row 0: Function Keys (Red ESC + F1-F12 + Delete)
+        // Function row
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(2.5.dp)
@@ -251,7 +249,7 @@ fun TactileKeyboard(
             ) { pressKey(KeycodeMap.KEY_DELETE) }
         }
 
-        // Row 1: Numbers & Symbols
+        // Number row
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(2.5.dp)
@@ -271,7 +269,7 @@ fun TactileKeyboard(
             ) { pressKey(KeycodeMap.KEY_BACKSPACE) }
         }
 
-        // Row 2: QWERTY Row
+        // QWERTY row
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(2.5.dp)
@@ -300,7 +298,7 @@ fun TactileKeyboard(
             KeyCap(label = "\\", height = keyHeight, fontSize = 10.sp, modifier = Modifier.weight(1f)) { pressKey(KeycodeMap.KEY_BACKSLASH) }
         }
 
-        // Row 3: Home Row
+        // Home row
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(2.5.dp)
@@ -341,7 +339,7 @@ fun TactileKeyboard(
             ) { pressKey(KeycodeMap.KEY_ENTER) }
         }
 
-        // Row 4: Shift Row
+        // Shift row
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(2.5.dp)
@@ -392,7 +390,7 @@ fun TactileKeyboard(
             ) { pressKey(KeycodeMap.KEY_UP_ARROW) }
         }
 
-        // Row 5: Physical Bottom Deck (Wide Spacebar + Accented Arrow Keys)
+        // Bottom deck
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(2.5.dp)
@@ -427,7 +425,6 @@ fun TactileKeyboard(
                 modifier = Modifier.weight(1.1f)
             ) { altActive = !altActive }
 
-            // WIDE LIGHT PHYSICAL SPACEBAR (weight 5.8f)
             KeyCap(
                 label = "SPACE",
                 height = keyHeight,
@@ -453,7 +450,7 @@ fun TactileKeyboard(
                 fontSize = 8.5.sp,
                 customBg = CharcoalDark,
                 modifier = Modifier.weight(1f)
-            ) { pressKey(0x46.toByte()) } // HID Usage ID 0x46 = PrintScreen
+            ) { pressKey(0x46.toByte()) }
 
             KeyCap(
                 label = "Ctrl",
@@ -465,7 +462,6 @@ fun TactileKeyboard(
                 modifier = Modifier.weight(1.1f)
             ) { ctrlActive = !ctrlActive }
 
-            // Accented Arrow Keys Cluster (← ↓ →)
             KeyCap(
                 label = "←",
                 height = keyHeight,

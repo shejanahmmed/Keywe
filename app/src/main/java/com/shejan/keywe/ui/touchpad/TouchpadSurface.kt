@@ -24,17 +24,14 @@ import com.shejan.keywe.ui.theme.*
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
-// =========================================================================
-// Tap state tracker — lives across recompositions via remember{}
-// =========================================================================
 private class TouchState {
     var lastX: Float = 0f
     var lastY: Float = 0f
-    var downX: Float = 0f          // finger-down X (for true displacement check)
-    var downY: Float = 0f          // finger-down Y
+    var downX: Float = 0f
+    var downY: Float = 0f
     var touchDownTime: Long = 0L
     var isDragging: Boolean = false
-    var peakPointerCount: Int = 0  // max fingers seen during this touch sequence
+    var peakPointerCount: Int = 0
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -73,7 +70,6 @@ fun TouchpadSurface(
     }
 
     val state = remember { TouchState() }
-    // Live touch position for visual feedback — Offset.Unspecified when not touching
     var touchIndicatorPos by remember { mutableStateOf(Offset.Unspecified) }
 
     // Unified Modern Trackpad Deck Module
@@ -102,10 +98,7 @@ fun TouchpadSurface(
                         val pointerCount = event.pointerCount
 
                         when (event.actionMasked) {
-
-                            // ── Finger(s) touch down ───────────────────────
                             MotionEvent.ACTION_DOWN -> {
-                                // Fresh touch sequence — reset everything
                                 state.lastX = event.x
                                 state.lastY = event.y
                                 state.downX = event.x
@@ -117,14 +110,11 @@ fun TouchpadSurface(
                             }
 
                             MotionEvent.ACTION_POINTER_DOWN -> {
-                                // Additional finger added — update peak count
                                 state.lastX = event.x
                                 state.lastY = event.y
                                 if (pointerCount > state.peakPointerCount) {
                                     state.peakPointerCount = pointerCount
                                 }
-                                // Adding a second finger resets drag tracking so a
-                                // quick 2-finger tap is not wrongly marked as a drag
                                 state.isDragging = false
                                 state.downX = event.x
                                 state.downY = event.y
@@ -132,14 +122,10 @@ fun TouchpadSurface(
                                 touchIndicatorPos = Offset(event.x, event.y)
                             }
 
-                            // ── Finger movement ────────────────────────────
                             MotionEvent.ACTION_MOVE -> {
                                 val deltaX = event.x - state.lastX
                                 val deltaY = event.y - state.lastY
 
-                                // Mark as dragging only when total displacement from
-                                // finger-down position exceeds 8px (Euclidean distance).
-                                // This prevents micro-jitter from blocking tap recognition.
                                 val totalDx = event.x - state.downX
                                 val totalDy = event.y - state.downY
                                 val totalDisplacement = sqrt(totalDx * totalDx + totalDy * totalDy)
@@ -156,27 +142,20 @@ fun TouchpadSurface(
                                     val dyRaw = deltaY * sensitivity
 
                                     if (pointerCount == 1) {
-                                        // Single finger → cursor movement
                                         val dxByte = dxRaw.coerceIn(-127f, 127f).roundToInt().toByte()
                                         val dyByte = dyRaw.coerceIn(-127f, 127f).roundToInt().toByte()
                                         if (dxByte != 0.toByte() || dyByte != 0.toByte()) {
                                             onMouseInput(0, dxByte, dyByte, 0)
                                         }
                                     } else if (pointerCount == 2) {
-                                        // Two fingers — determine dominant axis:
-                                        // vertical dominance → vertical scroll (wheel)
-                                        // horizontal dominance → horizontal scroll (pan via dx)
                                         val absDx = kotlin.math.abs(dxRaw)
                                         val absDy = kotlin.math.abs(dyRaw)
                                         if (absDy >= absDx) {
-                                            // Vertical scroll
                                             val wheelByte = (-dyRaw).coerceIn(-127f, 127f).roundToInt().toByte()
                                             if (wheelByte != 0.toByte()) {
                                                 onMouseInput(0, 0, 0, wheelByte)
                                             }
                                         } else {
-                                            // Horizontal scroll — send as cursor X delta
-                                            // (maps to horizontal pan on host)
                                             val panByte = dxRaw.coerceIn(-127f, 127f).roundToInt().toByte()
                                             if (panByte != 0.toByte()) {
                                                 onMouseInput(0, panByte, 0, 0)
@@ -186,41 +165,31 @@ fun TouchpadSurface(
                                 }
                             }
 
-                            // ── Finger(s) lift off ─────────────────────────
                             MotionEvent.ACTION_POINTER_UP -> {
-                                // Intermediate finger lifted — just update position.
-                                // Tap resolution always happens on the FINAL ACTION_UP.
                                 state.lastX = event.x
                                 state.lastY = event.y
                             }
 
                             MotionEvent.ACTION_UP -> {
-                                // Final finger has left the surface.
                                 val duration = System.currentTimeMillis() - state.touchDownTime
 
-                                // Tap window: 350ms max, no drag movement detected.
-                                // peakPointerCount records how many fingers were on
-                                // the surface at peak — regardless of lift order.
                                 if (!state.isDragging && duration < 350L) {
                                     triggerHapticPulse()
                                     when (state.peakPointerCount) {
                                         1 -> {
-                                            // Single-finger tap → Left Click
                                             onMouseInput(HidReportDescriptor.MOUSE_BUTTON_LEFT, 0, 0, 0)
-                                            onMouseInput(0, 0, 0, 0) // Button release
+                                            onMouseInput(0, 0, 0, 0)
                                         }
                                         2 -> {
-                                            // Two-finger tap → Right Click
                                             onMouseInput(HidReportDescriptor.MOUSE_BUTTON_RIGHT, 0, 0, 0)
-                                            onMouseInput(0, 0, 0, 0) // Button release
+                                            onMouseInput(0, 0, 0, 0)
                                         }
                                     }
                                 }
 
-                                // Reset for next touch sequence
                                 state.isDragging = false
                                 state.peakPointerCount = 0
-                                touchIndicatorPos = Offset.Unspecified // hide dot on lift
+                                touchIndicatorPos = Offset.Unspecified
                             }
 
                             MotionEvent.ACTION_CANCEL -> {
