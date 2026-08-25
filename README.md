@@ -4,13 +4,14 @@
 
 # KEYWE
 
-**Native Bluetooth HID Keyboard & Touchpad Remote for Android**
+**Native Bluetooth HID Keyboard & Multi-Touch Trackpad Peripheral for Android**
 
-*Turn your Android smartphone into a zero-latency, hardware-emulated Bluetooth Keyboard and Multi-Touch Trackpad — with zero host software required on your PC.*
+*Transform your Android device into a zero-latency, hardware-emulated Bluetooth Keyboard and Multi-Touch Trackpad — with zero host software or background drivers required on your computer.*
 
 [![Platform](https://img.shields.io/badge/Platform-Android%207.0%2B-00E676?style=for-the-badge&logo=android&logoColor=white)](https://developer.android.com)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0.0-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org)
-[![Compose](https://img.shields.io/badge/Jetpack%20Compose-1.7.0-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose)
+[![Compose](https://img.shields.io/badge/Jetpack%20Compose-BOM%202024.09-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose)
+[![Version](https://img.shields.io/badge/Version-1.2.0--beta-FF2A2A?style=for-the-badge)](app/build.gradle.kts)
 [![Privacy Policy](https://img.shields.io/badge/Privacy--Policy-Live-0A66C2?style=for-the-badge)](https://www.farjan.me/KeywePrivacyPolicy/)
 [![License](https://img.shields.io/badge/License-GPL--3.0-FFFF2A2A?style=for-the-badge)](LICENSE)
 
@@ -20,129 +21,163 @@
 
 ## 📌 Overview
 
-**Keywe** turns your phone into a native Bluetooth HID peripheral (Human Interface Device). Using Android’s `BluetoothHidDevice` framework, Keywe communicates directly with host operating systems at the hardware protocol layer.
+**Keywe** is a high-performance Android utility that emulates a physical Bluetooth Human Interface Device (HID) over standard Bluetooth L2CAP channels. Built on Android's native `BluetoothHidDevice` subsystem, Keywe operates directly at the hardware protocol layer.
 
-Unlike traditional remote control apps, **Keywe requires ZERO software, drivers, server apps, or scripts installed on your computer.** Your PC, Mac, or Smart TV detects your phone as an out-of-the-box physical Bluetooth Keyboard and Mouse.
-
----
-
-## ✨ Key Features & Capabilities
-
-### 💻 Zero Host Setup
-- **Plug-and-Play Out-of-the-Box**: Works seamlessly with **Windows 10/11**, **macOS**, **Linux**, **ChromeOS**, **Android TV**, and **Game Consoles**.
-- **No Background PC Drivers**: Zero server app or host script installation required.
-
-### 📖 Interactive Step-by-Step User Guide
-- **In-App User Guide Modal**: Access the complete **`USER GUIDE // HOW TO USE`** modal directly inside the Settings menu.
-- **Custom 2D Vector Icons**: Visual step cards illustrating Bluetooth pairing, multi-touch trackpad gestures, 75% mechanical deck, system soft IME & emojis, and sensitivity controls.
-
-### 🌟 Sleek Onboarding Experience
-- **Interactive First-Launch Guide**: High-impact welcome flow introducing zero-host HID connectivity, the 75% mechanical input deck, and instant pairing.
-- **Deferred System Permissions**: Bluetooth permissions are requested seamlessly **after** completing the welcome pages for an un-interrupted first launch.
-- **Custom Cyber Animations**: Features a real-time animated radar pulse, a glowing 4x3 mechanical deck simulation, and a hollow red breathing logo ring.
-
-### ⌨️ Full 75% Mechanical Keyboard Layout
-- **Authentic Physical Proportions**: Complete 75% layout with Function Keys row (`F1` - `F12`), `Esc` (Signal Red), `Del`, `Enter` (Signal Red), and dedicated arrow cluster (`▲`, `◄`, `▼`, `►`).
-- **Tactile Spacebar**: Wide light-grey spacebar with bold "SPACE" labeling for effortless thumb typing.
-- **Full Modifier & Hotkey Support**: Native support for `Ctrl`, `Alt`, `Shift`, `Win`, and `Fn` combinations.
-
-### 🖱️ Multi-Touch Gesture Trackpad with Integrated Click Zones
-- **Smooth Cursor Navigation**: Dynamic relative delta pointer tracking with customizable sensitivity (`0.5x` - `3.5x`).
-- **Natural Gestures**:
-  - **Single-finger tap**: Left Click
-  - **Two-finger tap**: Right Click
-  - **Two-finger vertical swipe**: Smooth Vertical Scrolling
-- **Integrated Click Zones**: `[ L-CLICK ]` and `[ R-CLICK ]` click zones built directly into the bottom of the trackpad surface with dual-trigger haptic vibration pulses.
-
-### 📱 Dual Keyboard Engines & Emoji Bar
-- **Built-in Tactile Keyboard**: Monochrome retro mechanical keycaps with haptic feedback.
-- **System Soft Keyboard (Phone IME)**: Long-press **`[ KEYBOARD ]`** mode button to use your phone's default input method (voice typing, swipe, Gboard, SwiftKey).
-- **Emoji Bar & Line Break**: Horizontally scrollable emoji strip (`😊`, `😂`, `❤️`, `👍`, `🔥`, `🎉`, etc.) and dedicated **`LINE BREAK`** button for instant newline insertion.
-
-### ⚙️ Persistent Preferences & Theme Customization
-- **Persistent SharedPreferences**: Automatically saves touchpad sensitivity (`0.5x` - `3.5x`) and haptic feedback settings across app restarts.
-- **Curated Color Themes**: `MONOCHROME DARK`, `MATRIX GREEN`, `CYBER AMBER`, `TACTILE WHITE`.
-- **Direct Privacy Policy Access**: In-app link to official Privacy Policy at [https://www.farjan.me/KeywePrivacyPolicy/](https://www.farjan.me/KeywePrivacyPolicy/).
+Unlike traditional VNC, Wi-Fi, or proprietary remote desktop solutions, **Keywe requires ZERO host-side software, background agents, drivers, or companion server applications.** Connecting devices (Windows, macOS, Linux, ChromeOS, Smart TVs, and gaming consoles) recognize your phone out of the box as a standard physical Bluetooth keyboard and mouse.
 
 ---
 
-## 🛠️ Architecture & Tech Stack
+## ✨ Core Features & Technical Highlights
+
+### ⚡ True Driverless Architecture
+- **Zero Host Installation**: Direct Bluetooth HID pairing. Zero companion apps, server daemons, or open local network ports required.
+- **Cross-Platform Compatibility**: Out-of-the-box support for **Windows 10/11**, **macOS**, **Linux**, **ChromeOS**, **Android TV**, **Apple TV**, and **Consoles**.
+- **Privacy-Centric**: Communication stays strictly local over encrypted Bluetooth links; zero data leaves your local environment.
+
+---
+
+### 🖱️ Multi-Touch Gesture Trackpad
+- **High-Precision Cursor Engine**: Delta-based pointer tracking with adjustable sensitivity scaling (`0.5x` – `3.5x`).
+- **Live Touch Aura Feedback**: Real-time canvas-rendered glowing indicator tracking multi-touch coordinates on the active surface.
+- **Dual-Axis 2-Finger Gestures**:
+  - **Vertical 2-Finger Drag**: Smooth vertical wheel scrolling.
+  - **Horizontal 2-Finger Drag**: Native horizontal axis panning.
+  - *Dominant-axis analysis cleanly disambiguates diagonal strokes.*
+- **Tap Gesture Detection**:
+  - **1-Finger Tap**: Left Click.
+  - **2-Finger Tap**: Right Click.
+  - *8px Euclidean displacement jitter filter ensures micro-movements do not cancel taps.*
+- **Physical Click Bar**: Dedicated `[ L-CLICK ]` and `[ R-CLICK ]` buttons with tactile dual-trigger haptic vibration pulses.
+
+---
+
+### ⌨️ 75% Tactile Mechanical Input Deck
+- **Authentic Physical Layout**: Complete 75% deck including Function keys (`F1`–`F12`), `Esc` (Accent Color), `PrtSc` (Print Screen), `Delete`, `Enter`, and a dedicated directional arrow cluster (`▲`, `◄`, `▼`, `►`).
+- **Dynamic Keycap Shortcut Hints**:
+  - Toggling **`Ctrl`** dynamically renders sub-labels on keycaps (`C` ➔ `COPY`, `V` ➔ `PASTE`, `Z` ➔ `UNDO`, `A` ➔ `ALL`, `S` ➔ `SAVE`, `W` ➔ `CLOSE`, `F` ➔ `FIND`, etc.).
+  - Toggling **`Win`** exposes operating system shortcuts (`E` ➔ `FILES`, `R` ➔ `RUN`, `D` ➔ `DESK`, `L` ➔ `LOCK`, `V` ➔ `CLIP`).
+- **One-Shot Shift**: Shift acts as a natural one-shot modifier, automatically resetting after character entry to prevent unintentional caps lock states.
+- **Simultaneous Release Protocol**: HID release reports clear keycodes and modifier masks simultaneously `(0, 0)` for clean keystroke termination.
+
+---
+
+### 📱 Dual Keyboard Engines & Remote Clipboard Sync
+- **Tactile Deck Engine**: Low-latency monochrome mechanical keyboard with localized haptics.
+- **System Soft Keyboard (Phone IME)**: Seamlessly switch to your phone's native keyboard (Gboard, SwiftKey, Voice Typing, Glide Input) by holding the mode selector.
+- **Paced Async Clipboard Streaming**: `PASTE TO PC` transmits clipboard strings with live progress tracking (`SENDING 42/150`) and paced 8ms inter-key dispatching to prevent HID buffer overruns.
+- **Host-Synced Remote Clear**: Tapping `CLEAR` synchronizes the focused host input field (`Ctrl + A` + `Delete`) while clearing the local text buffer.
+
+---
+
+### 🖥️ Adaptive Widescreen & Landscape UI
+- **Compact Landscape Toolbar**: High-density horizontal layout designed for landscape trackpad and typing usage.
+- **Header Bluetooth Control**: Direct access to the Bluetooth Device Manager from both portrait status indicators and the landscape `BT` button.
+- **Scroll-Safe Modal Architecture**: Dialogs (`DeviceManagerDialog`, `SettingsDialog`, `UserGuideDialog`) dynamically adapt with vertical scroll boundaries across small screens.
+
+---
+
+### 🎨 Minimalist Monochrome & Dot-Matrix Design System
+- **Curated Theme Presets**:
+  - `MONOCHROME DARK` (Deep Charcoal & Signal Red Accent)
+  - `MATRIX GREEN` (Terminal Phosphor Green Accent)
+  - `CYBER AMBER` (Industrial Amber Accent)
+  - `TACTILE WHITE` (High-Contrast Minimal Accent)
+- **Persistent Preferences**: Saves theme choice, keyboard engine preference, touchpad sensitivity, and haptics to `SharedPreferences`.
+
+---
+
+## 🛠️ Architecture & Data Flow
 
 ```
-           +-------------------------------------------------------+
-           |                 Keywe Android App                     |
-           |   (Jetpack Compose UI + Dot-Matrix Design System)     |
-           +-------------------------------------------------------+
-                                       |
-                                       v
-           +-------------------------------------------------------+
-           |               BluetoothHidManager Engine              |
-           |   (Dual-Executor Architecture + Live State Sync)      |
-           +-------------------------------------------------------+
-                                       |
-                                       v
-           +-------------------------------------------------------+
-           |           USB HID Combo Report Descriptor             |
-           |      (Report ID 1: Mouse | Report ID 2: Keyboard)     |
-           +-------------------------------------------------------+
-                                       |
-                            Bluetooth L2CAP Link
-                                       |
-                                       v
-           +-------------------------------------------------------+
-           |              Host PC / Mac / Smart TV                 |
-           |     (Native OS HID Driver: hidbth.sys / bthport)      |
-           +-------------------------------------------------------+
++-------------------------------------------------------------------+
+|                        Keywe Application                          |
+|   (Jetpack Compose UI • Dot-Matrix Monospace Design System)       |
++-------------------------------------------------------------------+
+                                  |
+                                  v
++-------------------------------------------------------------------+
+|                   BluetoothHidManager Engine                      |
+|  - Dual Executors: Thread-Priority Scheduled & High-Priority HID  |
+|  - Idempotent Lifecycle & ACL Link Disconnect State Machine       |
+|  - Real-Time Bluetooth Profile Verification                       |
++-------------------------------------------------------------------+
+                                  |
+                                  v
++-------------------------------------------------------------------+
+|                 USB HID Combo Report Descriptor                   |
+|       Report ID 1: 4-Byte Mouse (Buttons, dX, dY, Wheel)          |
+|       Report ID 2: 8-Byte Keyboard (Modifiers, Reserved, Keys[6]) |
++-------------------------------------------------------------------+
+                                  |
+                      Bluetooth L2CAP Connection
+                                  |
+                                  v
++-------------------------------------------------------------------+
+|                 Host PC / Mac / Linux / Smart TV                  |
+|          (Standard Native OS USB HID Peripheral Driver)           |
++-------------------------------------------------------------------+
 ```
 
-| Layer | Technology |
+---
+
+## 📋 Technical Specifications
+
+| Specification | Details |
 |---|---|
+| **App Name** | Keywe |
+| **Package Name** | `com.shejan.keywe` |
+| **Version** | `1.2.0-beta` (Version Code `3`) |
 | **Language** | Kotlin 2.0.0 |
-| **UI Framework** | Jetpack Compose (Material 3) |
-| **Design Language** | Dark Monochrome (`#0A0A0B`), Dot-Matrix Typography, LED Status Accents |
-| **Bluetooth Stack** | Android `BluetoothHidDevice` API, BLE HID Profile, L2CAP Sockets |
-| **Min SDK** | API Level 24 (Android 7.0 "Nougat") |
-| **Target SDK** | API Level 36 (Android 15) |
+| **UI Toolkit** | Jetpack Compose (Material 3) |
+| **Bluetooth Architecture** | Android `BluetoothHidDevice` API, L2CAP Sockets, SDP Records |
+| **Minimum SDK** | API Level 24 (Android 7.0 "Nougat") ~99.2% Device Compatibility |
+| **Target SDK** | API Level 36 (Android 15 / Minor API Level 1) |
+| **Build Configuration** | Kotlin DSL (`build.gradle.kts`) |
 
 ---
 
-## 🚀 Quick Start Guide
+## 🚀 Quick Setup Guide
 
-### Prerequisites
-- An Android device running **Android 9.0 (API Level 28)** or higher (with hardware `BluetoothHidDevice` profile support).
-- A host PC/laptop with Bluetooth capability.
+### 1. Requirements
+- An Android device running **Android 9.0 (API Level 28)** or newer with hardware HID profile support.
+- A target computer or device with Bluetooth enabled.
 
-### Connection Steps
-1. **Launch Keywe**: Open **Keywe** on your phone (verify status header displays `🔴 PAIRED / READY`).
-2. **Open Device Manager**: Tap the LED status badge in the top header.
-3. **Select or Pair PC**: Tap your PC under **PAIRED** or search under **NEARBY** tab.
-4. **Disconnect Anytime**: Tap **`DISCONNECT`** directly on any active device card to drop the link.
+### 2. Pairing Process
+1. Open **Keywe** on your phone.
+2. Tap the LED status indicator in the header to open the **Bluetooth Device Manager**.
+3. Under the **NEARBY** tab, scan and select your computer, or make your phone discoverable and pair directly from your computer's Bluetooth settings.
+4. Once paired, the header status turns **`CONNECTED`** — start typing and controlling your cursor instantly!
 
 ---
 
 ## ⚙️ Building From Source
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/shejanahmmed/Keywe.git
-   cd Keywe
-   ```
+### Prerequisites
+- Android Studio Ladybug (or newer)
+- JDK 17 / 21
+- Android SDK Platform 36
 
-2. Build debug APK using Gradle:
-   ```powershell
-   .\gradlew.bat assembleDebug
-   ```
+### Build Commands (PowerShell)
 
-3. Install on connected device:
-   ```powershell
-   .\gradlew.bat installDebug
-   ```
+```powershell
+# Clone the repository
+git clone https://github.com/shejanahmmed/Keywe.git
+cd Keywe
+
+# Assemble debug build
+.\gradlew.bat assembleDebug
+
+# Install to connected device
+.\gradlew.bat installDebug
+```
 
 ---
 
-## 🔒 Privacy Policy
+## 🔒 Privacy & Security
 
-Keywe respects your privacy and collects **ZERO personal data, keystrokes, or analytics**. Read the full live policy here:  
+Keywe does **not** collect, store, or transmit any user input, keystrokes, or personal data. All HID transmissions are strictly local to the established Bluetooth connection.
+
+Read our live privacy policy:  
 👉 **[https://www.farjan.me/KeywePrivacyPolicy/](https://www.farjan.me/KeywePrivacyPolicy/)**
 
 ---
