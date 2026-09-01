@@ -15,8 +15,8 @@ android {
         applicationId = "com.shejan.keywe"
         minSdk = 24
         targetSdk = 36
-        versionCode = 3
-        versionName = "1.2.0-beta"
+        versionCode = 4
+        versionName = "1.3.0-beta"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

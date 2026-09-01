@@ -11,7 +11,7 @@
 [![Platform](https://img.shields.io/badge/Platform-Android%207.0%2B-00E676?style=for-the-badge&logo=android&logoColor=white)](https://developer.android.com)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0.0-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org)
 [![Compose](https://img.shields.io/badge/Jetpack%20Compose-BOM%202024.09-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose)
-[![Version](https://img.shields.io/badge/Version-1.2.0--beta-FF2A2A?style=for-the-badge)](app/build.gradle.kts)
+[![Version](https://img.shields.io/badge/Version-1.3.0--beta-FF2A2A?style=for-the-badge)](app/build.gradle.kts)
 [![Privacy Policy](https://img.shields.io/badge/Privacy--Policy-Live-0A66C2?style=for-the-badge)](https://www.farjan.me/KeywePrivacyPolicy/)
 [![License](https://img.shields.io/badge/License-GPL--3.0-FFFF2A2A?style=for-the-badge)](LICENSE)
 
@@ -142,7 +142,7 @@ Unlike traditional VNC, Wi-Fi, or proprietary remote desktop solutions, **Keywe 
 |---|---|
 | **App Name** | Keywe |
 | **Package Name** | `com.shejan.keywe` |
-| **Version** | `1.2.0-beta` (Version Code `3`) |
+| **Version** | `1.3.0-beta` (Version Code `4`) |
 | **Language** | Kotlin 2.0.0 |
 | **UI Toolkit** | Jetpack Compose (Material 3) |
 | **Bluetooth Architecture** | Android `BluetoothHidDevice` API, L2CAP Sockets, SDP Records |

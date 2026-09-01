@@ -264,7 +264,7 @@ fun SettingsDialog(
                                 ) {
                                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                         Text(
-                                            text = "KEYWE v1.2.0 (BETA)",
+                                            text = "KEYWE v1.3.0 (BETA)",
                                             style = DotMatrixTypography.titleMedium,
                                             color = MonochromeWhite
                                         )
