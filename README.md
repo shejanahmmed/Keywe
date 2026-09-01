@@ -29,15 +29,17 @@ Unlike traditional VNC, Wi-Fi, or proprietary remote desktop solutions, **Keywe 
 
 ## ✨ Core Features & Technical Highlights
 
-### ⚡ True Driverless Architecture
+### ⚡ True Driverless & Persistent Multitasking Architecture
 - **Zero Host Installation**: Direct Bluetooth HID pairing. Zero companion apps, server daemons, or open local network ports required.
+- **Background Multitasking Service (`KeyweHidService`)**: Powered by an Android Foreground Service (`connectedDevice` type). Maintains a 100% active Bluetooth HID link while you switch apps or multitask.
+- **Smart Recents Teardown**: Hooks into `onTaskRemoved()` — when you swipe away Keywe from the Recent Apps screen, the service automatically disconnects the PC, stops the service, and dismisses the status notification.
 - **Cross-Platform Compatibility**: Out-of-the-box support for **Windows 10/11**, **macOS**, **Linux**, **ChromeOS**, **Android TV**, **Apple TV**, and **Consoles**.
 - **Privacy-Centric**: Communication stays strictly local over encrypted Bluetooth links; zero data leaves your local environment.
 
 ---
 
 ### 🖱️ Multi-Touch Gesture Trackpad
-- **High-Precision Cursor Engine**: Delta-based pointer tracking with adjustable sensitivity scaling (`0.5x` – `3.5x`).
+- **High-Precision Cursor Engine**: Delta-based pointer tracking with customizable sensitivity scaling (`0.5x` – `3.5x`).
 - **Live Touch Aura Feedback**: Real-time canvas-rendered glowing indicator tracking multi-touch coordinates on the active surface.
 - **Dual-Axis 2-Finger Gestures**:
   - **Vertical 2-Finger Drag**: Smooth vertical wheel scrolling.
@@ -47,7 +49,13 @@ Unlike traditional VNC, Wi-Fi, or proprietary remote desktop solutions, **Keywe 
   - **1-Finger Tap**: Left Click.
   - **2-Finger Tap**: Right Click.
   - *8px Euclidean displacement jitter filter ensures micro-movements do not cancel taps.*
-- **Physical Click Bar**: Dedicated `[ L-CLICK ]` and `[ R-CLICK ]` buttons with tactile dual-trigger haptic vibration pulses.
+- **Physical Click Bar**: Dedicated `[ L-CLICK ]` and `[ R-CLICK ]` buttons with tactile haptic vibration pulses.
+
+---
+
+### 📳 Universal Hardware Haptic Engine
+- **Android 10+ (API 29+) Hardware Waveforms**: Utilizes `VibrationEffect.EFFECT_CLICK` to trigger native hardware tactile click motors directly.
+- **Explicit Amplitude Fallback (`180`/255)**: Designed to overcome OEM vibration motor suppression (Samsung OneUI, Xiaomi MIUI, Motorola, Realme/Oppo) on Android 8/9 devices.
 
 ---
 
@@ -96,6 +104,14 @@ Unlike traditional VNC, Wi-Fi, or proprietary remote desktop solutions, **Keywe 
                                   |
                                   v
 +-------------------------------------------------------------------+
+|               KeyweHidService (Foreground Service)                |
+|  - Foreground Type: "connectedDevice" • Live Status Notification  |
+|  - Manages Persistent Connection Across Multitasking/App Switch   |
+|  - Automatic Teardown on Task Removed (Swiped from Recents)       |
++-------------------------------------------------------------------+
+                                  |
+                                  v
++-------------------------------------------------------------------+
 |                   BluetoothHidManager Engine                      |
 |  - Dual Executors: Thread-Priority Scheduled & High-Priority HID  |
 |  - Idempotent Lifecycle & ACL Link Disconnect State Machine       |
@@ -130,6 +146,7 @@ Unlike traditional VNC, Wi-Fi, or proprietary remote desktop solutions, **Keywe 
 | **Language** | Kotlin 2.0.0 |
 | **UI Toolkit** | Jetpack Compose (Material 3) |
 | **Bluetooth Architecture** | Android `BluetoothHidDevice` API, L2CAP Sockets, SDP Records |
+| **Service Architecture** | Foreground Service (`connectedDevice`), Notification Channel |
 | **Minimum SDK** | API Level 24 (Android 7.0 "Nougat") ~99.2% Device Compatibility |
 | **Target SDK** | API Level 36 (Android 15 / Minor API Level 1) |
 | **Build Configuration** | Kotlin DSL (`build.gradle.kts`) |
