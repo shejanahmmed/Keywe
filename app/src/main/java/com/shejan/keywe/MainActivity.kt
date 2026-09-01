@@ -46,6 +46,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.shejan.keywe.bt.BluetoothHidManager
 import com.shejan.keywe.bt.ConnectionStatus
+import com.shejan.keywe.service.KeyweHidService
 import com.shejan.keywe.ui.components.*
 import com.shejan.keywe.ui.keyboard.SystemKeyboardSurface
 import com.shejan.keywe.ui.keyboard.TactileKeyboard
@@ -71,6 +72,7 @@ class MainActivity : ComponentActivity() {
     ) { permissions ->
         val allGranted = permissions.entries.all { it.value }
         if (allGranted) {
+            KeyweHidService.start(this)
             hidManager.start()
         }
     }
@@ -84,7 +86,7 @@ class MainActivity : ComponentActivity() {
         windowInsetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
 
-        hidManager = BluetoothHidManager(this)
+        hidManager = BluetoothHidManager.getInstance(applicationContext)
 
         setContent {
             KeyweTheme {
@@ -500,6 +502,10 @@ class MainActivity : ComponentActivity() {
             permissions.add(Manifest.permission.ACCESS_FINE_LOCATION)
         }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissions.add(Manifest.permission.POST_NOTIFICATIONS)
+        }
+
         val missing = permissions.filter {
             ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
         }
@@ -507,6 +513,7 @@ class MainActivity : ComponentActivity() {
         if (missing.isNotEmpty()) {
             permissionLauncher.launch(missing.toTypedArray())
         } else {
+            KeyweHidService.start(this)
             hidManager.start()
         }
     }
@@ -516,23 +523,25 @@ class MainActivity : ComponentActivity() {
         val prefs = getSharedPreferences("keywe_prefs", MODE_PRIVATE)
         val onboardingShown = prefs.getBoolean("onboarding_shown", false)
         if (onboardingShown) {
-            val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                listOf(
-                    Manifest.permission.BLUETOOTH_CONNECT,
-                    Manifest.permission.BLUETOOTH_ADVERTISE,
-                    Manifest.permission.BLUETOOTH_SCAN
-                )
+            val permissions = mutableListOf<String>()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                permissions.add(Manifest.permission.BLUETOOTH_CONNECT)
+                permissions.add(Manifest.permission.BLUETOOTH_ADVERTISE)
+                permissions.add(Manifest.permission.BLUETOOTH_SCAN)
             } else {
-                listOf(
-                    Manifest.permission.BLUETOOTH,
-                    Manifest.permission.BLUETOOTH_ADMIN,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                )
+                permissions.add(Manifest.permission.BLUETOOTH)
+                permissions.add(Manifest.permission.BLUETOOTH_ADMIN)
+                permissions.add(Manifest.permission.ACCESS_FINE_LOCATION)
             }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                permissions.add(Manifest.permission.POST_NOTIFICATIONS)
+            }
+
             val allGranted = permissions.all {
                 ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
             }
             if (allGranted) {
+                KeyweHidService.start(this)
                 hidManager.start()
             } else {
                 checkAndRequestPermissions()
@@ -542,7 +551,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        hidManager.stop()
     }
 }
 

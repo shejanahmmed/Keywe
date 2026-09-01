@@ -30,13 +30,25 @@ enum class ConnectionStatus {
 }
 
 @SuppressLint("MissingPermission")
-class BluetoothHidManager(private val context: Context) {
+class BluetoothHidManager private constructor(context: Context) {
+
+    private val context: Context = context.applicationContext
+
+    companion object {
+        @Volatile
+        private var instance: BluetoothHidManager? = null
+
+        fun getInstance(context: Context): BluetoothHidManager {
+            return instance ?: synchronized(this) {
+                instance ?: BluetoothHidManager(context.applicationContext).also { instance = it }
+            }
+        }
+    }
 
     private val tag = "BluetoothHidManager"
 
-    // --- Bluetooth Adapter ---
     private val bluetoothAdapter: BluetoothAdapter? = try {
-        val mgr = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        val mgr = this.context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         mgr.adapter
     } catch (e: Exception) {
         null
